@@ -1,0 +1,3 @@
+cc_proto_library(
+        name = "actions_proto",
+)
