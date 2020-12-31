@@ -35,9 +35,16 @@ public:
   int resolution_;
 };
 
+
 struct ObservableState {
+  struct Agent {
+    double confidence;
+    nacb::Vec3d pos;
+  };
   const std::vector<std::unique_ptr<PowerUp> >& power_ups;
   const AccessibilityMap* access_map;
+  std::vector<Agent> visible_agents;
+
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <memory>
 #include <vector>
+#include <deque>
 
 #include <nmath/vec3.h>
 #include <nmath/quaternion.h>
@@ -16,6 +17,7 @@
 
 class ObservableState;
 
+extern std::deque<nacb::Vec3d> g_def;
 
 class Agent {
  public:
@@ -29,14 +31,17 @@ class Agent {
         double health = kDefaultHealth,
         double armor = kDefaultArmor) :
      pos_(pos), quat_(quat), size_(1, 2, 1 ), weapons_(std::move(weapons)),
-      health_(health), armor_(armor), active_weapon_(0), max_armor_(100), max_health_(100) {
+      health_(health), armor_(armor), active_weapon_(0), max_armor_(200), max_health_(200) {
     assert(active_weapon_ >= 0);
     assert(active_weapon_ < (int)weapons_.size());
   }
 
   virtual ~Agent() { }
        
-
+  void Reset() {
+    health_ = kDefaultHealth;
+    armor_ = kDefaultArmor;
+  }
   virtual void GetActions(const ObservableState& observable_state,
                           battle::Actions* actions) = 0;
 
@@ -56,6 +61,9 @@ class Agent {
         quat_.a = result.rotate().a();
       }
     }
+  }
+  bool IsActive() {
+    return health() >= 0;
   }
 
   void AddArmor(double value) {
@@ -82,8 +90,9 @@ class Agent {
 
   void GetWeaponRay(nacb::Vec3d* pos, nacb::Vec3d* dir) const {
     *pos = pos_;
-    pos->y += size_.y / 2.0;
+    pos->y += size_.y / 4.0;
     *dir = quat_.rotate(nacb::Vec3d(0, 0, 1));
+    *pos = *pos + (*dir) * GetCylinderRadius();
   }
 
   bool IntersectRay(const nacb::Vec3d& p,
@@ -108,7 +117,7 @@ class Agent {
     nacb::Vec3d x0 = pos_ + up * x[0];
     nacb::Vec3d x1 = p + d * x[1];
     const double r = (x1 - x0).len();
-    if (r >= size_.x / 2) return false;
+    if (r > GetCylinderRadius()) return false;
     *t = x[1]; // NOTE: This is only approximate!!!!
     return true;
   }
@@ -120,7 +129,8 @@ class Agent {
     assert(size_.x == size_.z);
     return size_.x / 2;
   }
-  
+
+  void set_pos(const nacb::Vec3d& p) { pos_ = p; }
   const nacb::Vec3d& pos() const { return pos_; }
   const nacb::Quaternion& quat() const { return quat_; }
   const nacb::Vec3d& size() const { return size_; }

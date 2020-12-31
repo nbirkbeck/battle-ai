@@ -26,6 +26,7 @@ int main(int ac, char* av[]) {
   }
   std::cout << "Successfully loaded:" << FLAGS_filename << std::endl;
 
+  /*
   nacb::Imagef image = world.BuildAccessibilityMap(16);
   image.write("/tmp/map.png");
 
@@ -38,5 +39,6 @@ int main(int ac, char* av[]) {
     snprintf(name, sizeof(name), "/tmp/image-%04d.png", i);
     image.write(name);
   }
+  */
   return 0;
 }

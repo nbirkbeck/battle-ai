@@ -5,9 +5,10 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <fcntl.h>
 
-class Level {
+class Proto {
  public:
-  static bool ReadProto(const std::string& filename, state::Level* level) {
+  template <class T>
+  static bool ReadProto(const std::string& filename, T* proto) {
     using namespace google::protobuf;
     if (filename.size() == 0) {
       LOG(ERROR) << "Need at least one argument (the input file)";
@@ -19,12 +20,10 @@ class Level {
       return false;
     }
     io::FileInputStream fstream(fd);
-    if (!TextFormat::Parse(&fstream, level)) {
-      LOG(ERROR) << "Unable to parse input as a level:" << filename;
+    if (!TextFormat::Parse(&fstream, proto)) {
+      LOG(ERROR) << "Unable to parse input:" << filename;
       return false;
     }
-    LOG(INFO) << "Loaded level.";
-    LOG(INFO) << level->DebugString();
     return true;
   }
 };

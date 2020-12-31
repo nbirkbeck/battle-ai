@@ -18,6 +18,9 @@ class PowerUp {
 
   void Give(Agent* agent);
 
+  void Reset() {
+    time_until_respawn_ = 0;
+  }
   void Step(double dt) {
     time_until_respawn_ = std::max(0.0, time_until_respawn_ - dt);
   }

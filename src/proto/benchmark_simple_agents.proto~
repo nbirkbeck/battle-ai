@@ -1,0 +1,11 @@
+package battle;
+
+import "src/proto/simple_agent.proto";
+
+message BenchmarkSimpleAgents {
+  namespace Agent {
+    optional string name = 1;
+    optional SimpleAgentParams params = 2;
+  }
+  repeated Agent agents = 1;
+}

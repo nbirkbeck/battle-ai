@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package battle;
+
+message SimpleAgentParams {
+  optional double accuracy = 1 [default = 0.5];
+  optional double replan_rate = 2 [default = 0.01];
+  optional double shoot_rate = 3 [default = 0.5];
+  optional double shoot_confidence = 4 [default = 0.0];
+  optional double replan_obstruction_distance = 5 [default = 2.0];
+  optional double aggressiveness = 6 [default = 0.5];
+  optional double favor_powerups = 7 [default = 1.0];
+}
