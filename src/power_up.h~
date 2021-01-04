@@ -1,0 +1,49 @@
+#ifndef _POWER_UP_H_
+#define _POWER_UP_H_ 1
+
+#include <memory>
+#include <nmath/vec3.h>
+
+#include "bounding_cylinder.h"
+#include "src/proto/level.pb.h"
+
+class PowerUp {
+ public:
+  PowerUp(const nacb::Vec3d pos,
+          const state::PowerUp::Type& type,
+          double amount) : pos_(pos), type_(type), amount_(amount)  {}
+
+  void Give(Agent* agent) {
+    switch (type_) {
+    case state::PowerUp::POWER_UP_HEALTH:
+      agent->AddHealth(amount_);
+      break;
+    case state::PowerUp::POWER_UP_ARMOR:
+      agent->AddArmor(amount_);
+      break;
+    }
+    amount_ = 0;
+  }
+
+  bool IsActive() const {
+    return amount_ > 0;
+  }
+
+  const BoundingCylinder GetBoundingGeometry() const {
+    const double kDefaultRadius = 0.5;
+    const double kDefaultHeight = 1.0;
+    return BoundingCylinder(pos_, kDefaultRadius, kDefaultHeight);
+  }
+
+  const nacb::Vec3d pos() const {
+    return pos_;
+  }
+
+ protected:
+  nacb::Vec3d pos_;
+  state::PowerUp::Type type_;
+  double amount_;
+};
+
+
+#endif  // _POWER_UP_H_

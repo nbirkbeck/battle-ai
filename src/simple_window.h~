@@ -1,0 +1,61 @@
+class SimpleWindow : public GLWindow {
+public:
+  Win(const state::Level& level) : GLWindow(1920/2, 1080/2) {
+
+    if (!world_.LoadFromProto(level, CreateAgent)) {
+      LOG(ERROR) << "Error loading level.";
+      exit(1);
+    }
+
+    setRefreshRate(60);
+  }
+
+  void drawScene() override {
+    world_renderer_.Draw(&world_);
+    if (animating_) {
+      world_.Step(1.0/60);
+    }
+  }
+  
+  virtual void applyModelview(){
+    if (animating_) {
+      const auto& pos = user_agent->pos();
+      const auto quat = user_agent->quat();
+      glRotatef(10, 1, 0, 0);
+      glTranslatef(0, -2.5, -5);
+      glRotatef(180, 0, 1, 0);
+      quat.conj().glRotate();
+      glTranslatef(-pos.x, -pos.y, -pos.z);
+    } else {
+      GLWindow::applyModelview();
+    }
+  }
+
+  void motion(int x, int y) {
+    if (bdown == 1) {
+      double dx = x - mpos[0], dy = y - mpos[1];
+      dx /= height();
+      dy /= height();
+      user_agent->Rotate(-dx);
+    }
+    return GLWindow::motion(x, y);
+  }
+
+  virtual bool keyboardUp(unsigned char c, int x, int y) override {
+    return user_agent->KeyboardUp(c, x, y);
+  }
+
+  virtual bool keyboard(unsigned char c, int x, int y) override{
+    switch (c) {
+    case '0':
+      animating_ = !animating_;
+      break;
+    }
+    return user_agent->KeyboardDown(c, x, y);
+  }
+
+protected:
+  WorldRenderer world_renderer_;
+  bool animating_ = false;
+  World world_;
+};

@@ -171,7 +171,7 @@ class GLWindow : public InteractiveCameraView {
     printf("setting window size.\n");
     glutInitWindowSize(width, height);
 
-    int glutFlags = GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH;
+    int glutFlags = GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE;
 
     if (flags & STENCIL_FLAG)
       glutFlags |= STENCIL_FLAG;

@@ -47,6 +47,14 @@ class PowerUp {
     return type_;
   }
 
+  double amount() const {
+    return amount_;
+  }
+
+  double respawn_delay() const {
+    return respawn_delay_;
+  }
+
  protected:
   nacb::Vec3d pos_;
   state::PowerUp::Type type_;

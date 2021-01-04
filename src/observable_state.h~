@@ -1,0 +1,11 @@
+#ifndef _OBSERVABLE_STATE_H_
+#define _OBSERVABLE_STATE_H_
+
+typedef std::vector<std::unique_ptr<AxisAlignedBox> > GeometryVector;
+typedef std::vector<Projectile> ProjectileVector;
+
+struct ObservableState {
+  const std::vector<std::unique_ptr<PowerUp> >& power_ups;
+};
+
+#endif

@@ -51,6 +51,13 @@ pkg_config(
     name = "freetype2",
 )
 
+pkg_config(
+    name = "cycles",
+)
+
+pkg_config(
+    name = "ngeotc",
+)
 
 http_archive(
   name = "pybind11_bazel",

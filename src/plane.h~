@@ -1,0 +1,12 @@
+struct Plane {
+  const nacb::Vec3d n;
+  double t;
+  bool IntersectRay(const nacb::Vec3d& p, const nacb::Vec3d& d, double* t) const {
+    double d_dot_n = d.dot(n);
+    if (fabs(d_dot_n) < 1e-10) {
+      return false;
+    }
+    *t = (-d - p.dot(n)) / d_dot_n;
+    return true;
+  }
+};

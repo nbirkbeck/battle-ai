@@ -1,0 +1,26 @@
+
+
+int main(int ac, char* av[]) {
+  gflags::ParseCommandLineFlags(&ac, &av, true);
+
+  google::InitGoogleLogging(av[0]);
+
+
+    World world;
+  if (!world.LoadFromProto(level)) {
+    LOG(ERROR) << "Error loading level.";
+    return -1;
+  }
+  std::cout << "Successfully loaded:" << FLAGS_filename << std::endl;
+  
+  state::Level level;
+  if (!Level::ReadProto(FLAGS_filename, &level)) {
+    LOG(ERROR) << "Error loading level.";
+    return -1;
+  }
+
+  
+  Win win(level);
+  win.loop(true);
+  return 0;
+}

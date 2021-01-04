@@ -15,16 +15,18 @@
 #include "src/proto/level.pb.h"
 #include "observable_state.h"
 
-inline nacb::Vec3d CreateVec3d(const state::Vec3& v) {
-  return nacb::Vec3d(v.x(), v.y(), v.z());
-}
-
 inline bool IsValidPoint(const nacb::Vec3d& x) {
   return (2 * x.x == int(2 * x.x)) &&
     (x.y == int(x.y)) &&
     (2 * x.z == int(2 * x.z));
 }
 
+template <class AgentPointer>
+bool LineHitsAnything(const nacb::Vec3d& p1, const nacb::Vec3d& p2,
+                      const GeometryVector& geoms,
+                      const std::vector<AgentPointer>& agents,
+                      double* t,
+                      Agent** agent);
 
 class World {
  public:
@@ -59,6 +61,8 @@ class World {
   const std::vector<std::unique_ptr<PowerUp> >& power_ups() const { return power_ups_; }
   const ProjectileVector& projectiles() const { return projectiles_; }
 
+  ObservableState GetObservableStateForAgent(Agent* a) const;
+  
   void ReplaceAgent(int i, Agent* agent) {
     const nacb::Vec3d p = agents_[i]->pos();
     agent->set_pos(p);

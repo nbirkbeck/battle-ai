@@ -3,6 +3,14 @@ proto_library(
     srcs = ["vec3.proto"],
 )
 
+cc_proto_library(
+    name = "vec3_proto_cc",
+    visibility = ["//visibility:public"],
+    deps = [
+        "vec3_proto",
+    ],
+)
+
 proto_library(
     name = "actions_proto",
     srcs = ["actions.proto"],

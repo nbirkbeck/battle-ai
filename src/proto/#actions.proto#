@@ -41,7 +41,7 @@ message ActionResponse {
   message Result {
     optional StatusCode code = 1;
     optional string message = 2;
-
+im
     message Shoot {
     }
     message Rotate {

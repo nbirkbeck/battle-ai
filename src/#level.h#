@@ -5,23 +5,9 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <fcntl.h>
 
-#include <nmath/vec3.h>
-#include "src/proto/vec3.pb.h"
-
-inline nacb::Vec3d CreateVec3d(const state::Vec3& v) {
-  return nacb::Vec3d(v.x(), v.y(), v.z());
-}
-
-inline void SetVec3(state::Vec3* v, const nacb::Vec3d& value) {
-  v->set_x(value.x);
-  v->set_y(value.y);
-  v->set_z(value.z);
-}
-
-class Proto {
+class Level {
  public:
-  template <class T>
-  static bool ReadProto(const std::string& filename, T* proto) {
+  static bool ReadProto(const std::string& filename, state::Level* level) {
     using namespace google::protobuf;
     if (filename.size() == 0) {
       LOG(ERROR) << "Need at least one argument (the input file)";
@@ -33,10 +19,12 @@ class Proto {
       return false;
     }
     io::FileInputStream fstream(fd);
-    if (!TextFormat::Parse(&fstream, proto)) {
-      LOG(ERROR) << "Unable to parse input:" << filename;
+    if (!TextFormat::Parse(&fstream, level)) {
+      LOG(ERROR) << "Unable to parse input as a level:" << filename;
       return false;
     }
+    LOG(INFO) << "Loaded level.";
+    LOG(INFO) << level->DebugString();
     return true;
   }
 };

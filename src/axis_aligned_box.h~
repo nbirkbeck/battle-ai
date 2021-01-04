@@ -32,16 +32,17 @@ class AxisAlignedBox {
     };
 
     *t = 1e10;
-    for (int plane_index = 0; plane_index < 4; ++plane_index) {
-      const Plane& plane = planes[plane_index];
+    for (const auto& plane : planes) {
       double t1 = 1e10;
-      if (d.dot(plane.n) >= 0) continue;
-      if (plane.IntersectRay(p, d, &t1) && t1 >= -r/4 && t1 < *t) {
+      if (d.dot(plane.n) >= -0.01) continue;
+      if (plane.IntersectRay(p, d, &t1)) {
         const nacb::Vec3d x = p + d * t1;
         // TODO: y?
-        const int check = plane_index <= 1 ? 2 : 0;
-        if (x.data[check] >= pos.data[check] - size.data[check] / 2 - r &&
-            x.data[check] <= pos.data[check] + size.data[check] / 2 + r) {
+        if (x.x >= pos.x - size.x / 2 - r &&
+            x.x <= pos.x + size.x / 2 + r &&
+            x.z >= pos.z - size.z / 2 - r &&
+            x.z <= pos.z + size.z / 2 + r &&
+            t1 >= -r/4 && t1 < *t) {
           nacb::Vec3d x_full = x + d;
           if (deflected) {
             nacb::Vec3d d2 = x_full - x;
@@ -49,7 +50,7 @@ class AxisAlignedBox {
             d2 -= rem * plane.n;
             *deflected = x + d2;
           }
-          *t = t1 - 1e-6; // Was 1e-3
+          *t = t1;
         }
       }
     }

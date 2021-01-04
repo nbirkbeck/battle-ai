@@ -26,16 +26,17 @@ bool LineHitsAnything(const nacb::Vec3d& p1, const nacb::Vec3d& p2,
                       double* t,
                       Agent** agent) {
   double min_t = 1e10;
+  const nacb::Vec3d d = p2 - p1;
+      
   for (const auto& g : geoms) {
     double t = 1e10;
-    if (g->IntersectRay(p1, (p2 - p1), &t) && t < min_t && t > 0) {
+    if (g->IntersectRay(p1, d, &t) && t < min_t && t > 0) {
       min_t = t;
     }
   }
   *agent = 0;
   for (const auto& a : agents) {
     double t = 1e10;
-    nacb::Vec3d d = p2 - p1;
     if (a->IntersectRay(p1, d, &t)) {
       if (t < min_t && t > 0) {
         *agent = const_cast<Agent*>(get_ptr(a));
@@ -46,6 +47,21 @@ bool LineHitsAnything(const nacb::Vec3d& p1, const nacb::Vec3d& p2,
   *t = min_t;
   return min_t <= 1;
 }
+
+template
+bool LineHitsAnything(const nacb::Vec3d& p1, const nacb::Vec3d& p2,
+                      const GeometryVector& geoms,
+                      const std::vector<const Agent*>& agents,
+                      double* t,
+                      Agent** agent);
+
+template
+bool LineHitsAnything(const nacb::Vec3d& p1, const nacb::Vec3d& p2,
+                      const GeometryVector& geoms,
+                      const std::vector<std::unique_ptr<Agent>>& agents,
+                      double* t,
+                      Agent** agent);
+
 
 bool IntersectRayAndGeoms(const GeometryVector& geoms,
                           const nacb::Vec3d& p,
@@ -99,18 +115,11 @@ void HandleAgentMove(Agent* a,
     }
     results->set_code(battle::STATUS_OK);
     auto* m = results->mutable_move();
-    auto* p = m->mutable_pos();
-    p->set_x(new_pos.x);
-    p->set_y(new_pos.y);
-    p->set_z(new_pos.z);
+    SetVec3(m->mutable_pos(), new_pos);
   } else {
     results->set_code(battle::STATUS_NO_OP);
     auto* m = results->mutable_move();
-    auto* p = m->mutable_pos();
-    p->set_x(new_pos.x);
-    p->set_y(new_pos.y);
-    p->set_z(new_pos.z);
-    
+    SetVec3(m->mutable_pos(), new_pos);
   }
 }
 
@@ -124,11 +133,8 @@ void HandleAgentRotate(Agent* a,
                                                   rotate.v().y(),
                                                   rotate.v().z()),
                                       rotate.a());
-  //auto q = nacb::Quaternion(nacb::Vec3d(0, 1, 0), rotate.angle()) * a->quat();
   auto* r = results->mutable_rotate();
-  r->mutable_v()->set_x(target_quat.v.x);
-  r->mutable_v()->set_y(target_quat.v.y);
-  r->mutable_v()->set_z(target_quat.v.z);
+  SetVec3(r->mutable_v(), target_quat.v);
   r->set_a(target_quat.a);
 }
 
@@ -141,7 +147,7 @@ void HandleAgentShoot(Agent* a,
   if (a->current_weapon().CanFire(world_time)) {
     nacb::Vec3d p, d;
     a->GetWeaponRay(&p, &d);
-    LOG(INFO) << p << " " << d;
+    // LOG(INFO) << p << " " << d;
     projectiles->push_back(a->current_weapon().Fire(world_time, p, d));
 
     results->set_code(battle::STATUS_OK);
@@ -152,39 +158,46 @@ void HandleAgentShoot(Agent* a,
   }
 }
 
+ObservableState World::GetObservableStateForAgent(Agent* a) const {
+  std::vector<ObservableState::Agent> visible_agents;
+
+  for (auto& a2: agents_) {
+    if (a2.get() == a) continue;
+    
+    const nacb::Vec3d& p1 = a->pos();
+    const nacb::Vec3d& p2 = a2->pos();
+    nacb::Vec3d d = p2 - p1;
+    d.normalize();
+    nacb::Vec3d x = nacb::Vec3d(0, 1, 0).cross(d);
+    std::vector<const Agent*> agents;
+    // agents.push_back(a2.get());
+    double t = 0;
+    double confidence = 0;
+    std::vector<std::pair<nacb::Vec3d, nacb::Vec3d> > lines;
+    for (int n = -3; n <= 3; ++n) {
+      Agent* hit_agent = nullptr;
+      const double r = 0.5;
+      if (!LineHitsAnything(p1, p2 + x * (r * double(n) / 3.0), geoms_, agents, &t, &hit_agent)) {
+        lines.push_back(std::make_pair(p1, p1 * (1.0 -t) + (p2 + x * (r * n / 3.0)) * t ));
+        confidence += 1;
+      }
+    }
+    confidence /= 7.0;
+    if (confidence > 0) {
+      visible_agents.push_back({confidence, a2->pos(), lines});
+    }
+  }
+  return ObservableState{power_ups_, access_map_.get(), visible_agents};
+}
+
 bool World::Step(const double dt) {
   std::vector<battle::Actions> agent_actions;
 
   for (auto& a: agents_) {
     // TODO: give agent a chance to observe the world.
     battle::Actions actions;
-    std::vector<ObservableState::Agent> visible_agents;
 
-    for (auto& a2: agents_) {
-      if (a2.get() == a.get()) continue;
-      
-      nacb::Vec3d p1 = a->pos();
-      nacb::Vec3d p2 = a2->pos();
-      nacb::Vec3d d = p2 - p1;
-      nacb::Vec3d x = nacb::Vec3d(0, 1, 0).cross(d * (1.0/d.len()));
-
-      std::vector<const Agent*> agents;
-      agents.push_back(a2.get());
-      Agent* hit_agent = nullptr;
-      double t = 0;
-      double confidence = 0;
-      for (int n = -3; n <= 3; ++n) {
-        if (LineHitsAnything(p1, p2 + x * (n / 3.0), geoms_, agents, &t, &hit_agent) &&
-            t > 0 && hit_agent == a2.get()) {
-          confidence += 1;
-        }
-      }
-      confidence /= 7.0;
-      if (confidence > 0) {
-        visible_agents.push_back({confidence, a2->pos()});
-      }
-    }
-    const ObservableState state = {power_ups_, access_map_.get(), visible_agents};
+    auto state = GetObservableStateForAgent(a.get());
     a->GetActions(state, &actions);
     agent_actions.push_back(actions);     
   }
@@ -239,11 +252,8 @@ bool World::Step(const double dt) {
     Agent* agent = 0;
     double t = 0;
     if (LineHits(pos_now, pos_future, &t, &agent)) {
-      
       if (agent) {
         agent->DoDamage(p.damage());
-        LOG(INFO) << "Hit agent:" << agent->health();
-
         p.Kill(world_time_);
         p.MoveTo(pos_now + (pos_future - pos_now) * t);
       } else {

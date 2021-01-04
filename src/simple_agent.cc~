@@ -1,0 +1,19 @@
+#include "simple_agent.h"
+
+
+void SimpleAgent::GetActions(battle::Actions* actions) {
+  if (!plan_) {
+    plan_.reset(new Plan);
+    plan_->waypoints_.push_back(nacb::Vec3d(0, 0.5, 0));
+  }
+  if (!plan_) return;
+
+  if (plan_->HasWaypoints()) {
+    const nacb::Vec3d waypoint = plan_->GetFirstWaypoint();
+    auto* move = actions->mutable_move();
+    auto* target = move->mutable_target();
+    target->set_x(waypoint.x);
+    target->set_y(waypoint.y);
+    target->set_z(waypoint.z);
+  }
+}

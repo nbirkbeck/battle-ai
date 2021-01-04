@@ -33,15 +33,18 @@ cc_library(
     srcs = [
         "power_up.cc",
         "simple_agent.cc",
+        "search.cc",
     ],
     hdrs = [
         "agent.h",
-        "observable_state.h",
         "power_up.h",
         "simple_agent.h",
         "math.h",
+        "observable_state.h",
+        "search.h"
     ],
     deps = DEPS + [
+        ":proto",
         ":weapon",
         ":geometry",
         "//src/proto:actions_proto_cc",
@@ -53,7 +56,12 @@ cc_library(
 cc_library(
     name = "proto",
     hdrs = ["proto.h"],
-    visibility = [":subpackages"],
+    visibility = [
+      ":subpackages",
+    ],
+    deps = [
+      "//src/proto:vec3_proto_cc",
+    ] 
 )
 
 cc_library(
@@ -146,3 +154,22 @@ cc_test(
     ],
 )
 
+
+cc_binary(
+    name = "bake_ambient_occlusion",
+    srcs = ["bake_ambient_occlusion.cc"],
+    linkopts = ["-lglut -lGL -lGLU",
+              "-L/home/birkbeck/src/cycles.build/lib"],
+    deps = [
+        ":proto",
+        ":world",
+        ":world_renderer",
+        "//src/utigl:glwindow", 
+        "//src/proto:level_proto_cc",
+        "//src/proto:agent_list_proto_cc",
+        "@ngeotc//:lib",
+        "@nmath//:lib",
+        "@nimage//:lib",
+        "@cycles//:lib",
+    ],
+)
