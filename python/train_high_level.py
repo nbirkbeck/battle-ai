@@ -1,17 +1,23 @@
+import argparse
+
 import high_level_env
 import os
 from stable_baselines3 import PPO, A2C
 from sb3_contrib import QRDQN
 from stable_baselines3.common.cmd_util import make_vec_env
 
-# Instantiate the env
-filename = '/home/birkbeck/Desktop/BattleAI/levels/world.textpb'
-use_dqn = True
-train = True
-save_dir = "/tmp/high_level"
+parser = argparse.ArgumentParser(description='Train to find powerups.')
+parser.add_argument('--model', type=str, help='DQN or PPO', default='DQN')
+parser.add_argument('--filename', type=str, help='Path to world',
+                    default='../levels/w1.textpb')
+parser.add_argument('--save_dir', type=str, help='Director to save state',
+                    default='/tmp/high_level')
+parser.add_argument('--train', type=bool, help='Whether to train or not',
+                    default=True)
+args = parser.parse_args()
 
-if use_dqn:
-    env = high_level_env.HighLevelEnv(filename)
+if args.model == 'DQN':
+    env = high_level_env.HighLevelEnv(args.filename)
     single_env = env
     env = make_vec_env(lambda: env, n_envs=1)
     model = QRDQN('MlpPolicy', env, verbose=2,
@@ -25,7 +31,7 @@ else:
     env = make_vec_env(lambda: env, n_envs=1)
     model = PPO('MlpPolicy', env, verbose=1)
     
-if train:
+if args.train:
     model.learn(1000000)
     os.makedirs(save_dir, exist_ok=True)
     model.save(save_dir + "/10k")

@@ -63,11 +63,13 @@ class FindPowerupsEnv(gym.Env):
 
     moved = self.agent.moved_distance()
 
-    # Reward proportional to maximum velocity moved
-    reward = 0 * moved / 20.0
+    # [Optional]: Reward proportional to maximum velocity moved?
+    reward =  0 * moved / 20.0
     if moved < 1e-6:
       reward -= 1
       self.agent.do_damage(1)
+
+    # [Optional] consider powerup distances?
     #reward += self.agent.powerup_dist(self.world)
     self.current_step += 1
 

@@ -3,7 +3,7 @@ syntax = "proto2";
 package battle;
 
 message SimpleAgentParams {
-  optional double accuracy = 1 [default = 0.5];
+  optional double accuracy = 1 [default = 0.8];
   optional double replan_rate = 2 [default = 0.01];
   optional double shoot_rate = 3 [default = 0.5];
   optional double shoot_confidence = 4 [default = 0.0];

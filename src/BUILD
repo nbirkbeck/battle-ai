@@ -118,7 +118,10 @@ cc_binary(
 cc_binary(
     name = "ui",
     srcs = ["ui.cc"],
-    linkopts = ["-lglut -lGL -lGLU"],
+    copts = [
+       "-I/usr/include/OIS",
+    ],
+    linkopts = ["-lglut -lGL -lGLU -lOIS -lOgreMain -lOgrePaging -lOgreProperty -lGL -lGLU"],
     deps = [
         ":proto",
         ":world",
@@ -126,6 +129,7 @@ cc_binary(
         "//src/proto:level_proto_cc",
         "//src/proto:agent_list_proto_cc",
         "//src/utigl:glwindow",
+        "//src/utigl:ogre_window",
         "//src/utigl:ffont",
         "@freetype2//:lib",
     ],
