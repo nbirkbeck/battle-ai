@@ -2,6 +2,7 @@ import battle_ai
 import numpy as np
 import gym
 import math
+import time
 from gym import spaces
 
 class HighLevelEnv(gym.Env):
@@ -29,7 +30,8 @@ class HighLevelEnv(gym.Env):
     self.window = None
     self.current_step = 0
     self.render_all = False
-
+    self.level_name = level_name
+  
   def _get_state(self):
     return self.agent.observe(self.world)
 
@@ -38,6 +40,8 @@ class HighLevelEnv(gym.Env):
     self.world.reset()
     self.agent.reset()
     self.current_step = 0
+    self.num_kills = 0
+    self.num_deaths = 0
     return self._get_state()
 
   def step(self, action):
@@ -55,7 +59,7 @@ class HighLevelEnv(gym.Env):
     for i in range(0, 15):
       self.world.step(1.0 / 30.0)
       if self.render_all:
-        self.render('human')
+        self.render('human', delay=1.0/90.0)
 
     moved = self.agent.moved_distance()
     reward_weights = {
@@ -97,11 +101,13 @@ class HighLevelEnv(gym.Env):
     if self.agent.health() < 0:
       reward += reward_weights['die']
       print('died')
+      self.num_deaths += 1
       self.world.reset_agent(0)
       
     if self.other_agent.health() < 0:
       reward += reward_weights['kill']
       print('killed other')
+      self.num_kills += 1
       self.world.reset_agent(1)
       
     self.current_step += 1
@@ -112,15 +118,24 @@ class HighLevelEnv(gym.Env):
     info = {'moved': moved}
     return self._get_state(), reward, done, info
 
-  def render(self, mode='console'):
+  def render(self, mode='console', delay=0):
     if mode != 'human':
       raise NotImplementedError()
     if not self.window:
-      self.window = battle_ai.SimpleWindow()
+      if False:
+        self.window = battle_ai.SimpleWindow()
+      else:
+        self.window = battle_ai.OgreWin(self.level_name + ".mesh")
       self.window.set_world(self.world)
 
+    self.window.set_info_string('Kills: %d Deaths: %d' % (self.num_kills, self.num_deaths))
     self.window.refresh()
-    self.window.process_events()
+    for i in range(0, 10):
+      self.window.process_events()
+    self.window.draw_scene()
+    if delay > 0:
+      time.sleep(delay)
+
   
   def close(self):
     pass

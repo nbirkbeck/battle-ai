@@ -24,7 +24,8 @@ class FindPowerupsEnv(gym.Env):
     self.observation_space = spaces.Box(low=-1, high=1, shape=(4 + len(pup_times),), dtype=np.float32)
     self.window = None
     self.current_step = 0
-
+    self.level_name = level_name
+    
   def _get_state(self):
     pup_times = battle_ai.powerup_times(self.world)
     return np.array([p / 10 for p in self.agent.pos2d()] +
@@ -91,11 +92,14 @@ class FindPowerupsEnv(gym.Env):
     if mode != 'human':
       raise NotImplementedError()
     if not self.window:
-      self.window = battle_ai.SimpleWindow()
+      #self.window = battle_ai.SimpleWindow()
+      self.window = battle_ai.OgreWin(self.level_name + ".mesh")
       self.window.set_world(self.world)
 
     self.window.refresh()
-    self.window.process_events()
+    for i in range(0, 10):
+      self.window.process_events()
+    self.window.draw_scene()
   
   def close(self):
     pass

@@ -2,6 +2,8 @@ syntax = "proto2";
 
 package battle;
 
+// The SimpleAgent is a PlanFollowingAgent that has a few parameters
+// that control probability of its actions.
 message SimpleAgentParams {
   optional double accuracy = 1 [default = 0.8];
   optional double replan_rate = 2 [default = 0.01];

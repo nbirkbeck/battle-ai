@@ -3,6 +3,8 @@ syntax = "proto2";
 import "src/proto/vec3.proto";
 package battle;
 
+// A list of possible actions an agent can take. Some of these haven't
+// been implemented (or flushed out yet)
 message Actions {
   message Shoot {
     optional bool shoot = 1; 
@@ -15,13 +17,10 @@ message Actions {
     optional state.Vec3 target = 1;
   }
   message Crouch {
-
   }
   message Jump {
-
   }
   message ChangeWeapon {
-    
   }
   optional Move move = 1;
   optional Rotate rotate = 2;
@@ -31,12 +30,14 @@ message Actions {
   optional Shoot shoot = 6;
 }
 
-  enum StatusCode {
-    STATUS_OK = 1;
-    STATUS_INVALID_ACTION = 2;
-    STATUS_NO_OP = 3;
-  }
+enum StatusCode {
+  STATUS_OK = 1;
+  STATUS_INVALID_ACTION = 2;
+  STATUS_NO_OP = 3;
+}
 
+// The response of the game server to a desired action containing
+// the result of the intended action.
 message ActionResponse {
   message Result {
     optional StatusCode code = 1;

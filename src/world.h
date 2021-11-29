@@ -8,9 +8,8 @@
 
 #include <nimage/image.h>
 
-#include "axis_aligned_box.h"
-#include "agent.h"
-#include "simple_agent.h"
+#include "src/geometry/axis_aligned_box.h"
+#include "src/agent/agent.h"
 #include "power_up.h"
 #include "src/proto/level.pb.h"
 #include "observable_state.h"
@@ -30,6 +29,9 @@ bool LineHitsAnything(const nacb::Vec3d& p1, const nacb::Vec3d& p2,
 
 class World {
  public:
+  typedef std::function<Agent*(int i, const nacb::Vec3d& pos,
+                               const nacb::Quaternion& quat,
+                               std::vector<Weapon> weapons)> create_agent_function_t;
       
   World() {
     FullReset();
@@ -52,9 +54,7 @@ class World {
 
   bool LoadFromFile(const std::string& filename);
   bool LoadFromProto(const state::Level& level,
-                     std::function<Agent*(int i, const nacb::Vec3d& pos,
-                                          const nacb::Quaternion& quat,
-                                          std::vector<Weapon> weapons)> create_agent = nullptr);
+                     create_agent_function_t create_agent = nullptr);
 
   const GeometryVector& geoms() const { return geoms_; }
   const std::vector<std::unique_ptr<Agent> >& agents() const { return agents_; }
@@ -69,6 +69,8 @@ class World {
     agents_[i].reset(agent);
   }
 
+  std::unique_ptr<AccessibilityMap> BuildAccessibilityMap(int resolution) const;
+    
   const AccessibilityMap& access_map() const {
     return *access_map_.get();
   }

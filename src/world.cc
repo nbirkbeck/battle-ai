@@ -2,10 +2,11 @@
 
 #include <algorithm>
 
-#include "plane.h"
-#include "proto.h"
+#include "src/geometry/plane.h"
+#include "src/proto.h"
 #include "observable_state.h"
 #include "src/proto/actions.pb.h"
+#include "src/agent/simple_agent.h"
 
 extern std::deque<nacb::Vec3d> g_def;
 
@@ -343,7 +344,7 @@ bool World::LoadFromProto(const state::Level& level,
     }
     agent_index++;
   }
-  access_map_.reset(new AccessibilityMap(bounds_, geoms_, 3));
+  access_map_ = BuildAccessibilityMap(3);
   return true;
 }
 
@@ -369,6 +370,10 @@ void World::ResetAgent(int agent_index) {
   agents_[agent_index]->Reset();
 }
 
+std::unique_ptr<AccessibilityMap> World::BuildAccessibilityMap(int resolution) const {
+  return std::unique_ptr<AccessibilityMap>(new AccessibilityMap(bounds_, geoms_, resolution));
+}
+
 AccessibilityMap::AccessibilityMap(const AxisAlignedBounds& bounds,
                                    const GeometryVector& geoms,
                                    int resolution) : bounds_(bounds), resolution_(resolution) {
@@ -390,7 +395,7 @@ AccessibilityMap::AccessibilityMap(const AxisAlignedBounds& bounds,
       }
     }
   }
-  /*
+#ifdef WORLD_SHOW_POWERUPS
   for (const auto& pup : power_ups_) {
     nacb::Vec3d p = pup->pos() - bounds_.min;
     p.x *= (image.w / size.x);
@@ -415,9 +420,14 @@ AccessibilityMap::AccessibilityMap(const AxisAlignedBounds& bounds,
         image((int)p.x + xi, (int)p.z + zi, 2) = 0.0;
       }
     }
-    }*/
+  }
+#endif
+
   map_ = image;
-  map_.save("/tmp/map.png");
-  image.boxFilter(1).boxFilter(1).boxFilter(1).save("/tmp/c.png");
-  (map_ > 0).edt_8sed(0).save("/tmp/edt.png");
+
+#ifdef WORLD_WRITE_DEBUG_IMAGES
+  //map_.save("/tmp/map.png");
+  //image.boxFilter(1).boxFilter(1).boxFilter(1).save("/tmp/c.png");
+  //(map_ > 0).edt_8sed(0).save("/tmp/edt.png");
+#endif
 }

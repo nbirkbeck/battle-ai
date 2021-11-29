@@ -4,6 +4,7 @@ import "src/proto/vec3.proto";
 
 package state;
 
+// Description of a power-up.
 message PowerUp {
   enum Type {
     POWER_UP_HEALTH = 0;
@@ -11,18 +12,25 @@ message PowerUp {
   }
   optional Vec3 pos = 1;
   optional Type type = 2;
+  // The amount controls the amount of the power-up given to an agent
   optional double amount = 3;
 }
 
+// The level is made up of a set of 3D boxes. These should lie on the
+// y=0 plane.
 message Box {
   optional Vec3 pos = 1;
   optional Vec3 size = 2;
 }
 
+// A spawn point is a place where an agent will be spawned at the
+// beginning of the game (or after respawn when killed)
 message SpawnPoint {
   optional Vec3 pos = 1;
 }
 
+// Level is simply made up of the geometry (boxes) the power-ups
+// and any spawn points.
 message Level {
   repeated Box boxes = 1;
   repeated PowerUp power_ups = 2;

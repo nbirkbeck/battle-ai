@@ -1,5 +1,5 @@
-#include "power_up.h"
-#include "agent.h"
+#include "src/power_up.h"
+#include "src/agent/agent.h"
 
 void PowerUp::Give(Agent* agent) {
   switch (type_) {

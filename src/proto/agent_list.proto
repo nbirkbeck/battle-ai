@@ -2,6 +2,8 @@ package battle;
 
 import "src/proto/simple_agent.proto";
 
+// A list of agents with different paramters that can be used in
+// e.g., benchmarking.
 message AgentList {
   message Agent {
     optional string name = 1;
