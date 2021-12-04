@@ -79,3 +79,29 @@ cc_library(
       ":subpackages",
     ],
 )
+
+
+cc_library(
+    name = "high_level_agent",
+    srcs = [
+        "high_level_agent.cc",
+    ],
+    hdrs = [
+        "high_level_agent.h",
+    ],
+    deps = DEPS + [
+       ":search",
+       ":agent",
+        "//src:proto",
+        "//src:weapon",
+        "//src:power_up_hdr",
+        "//src:observable_state",
+        "//src/geometry",
+        "//src/proto:actions_proto_cc",
+        "//src/proto:simple_agent_proto_cc",
+        "//src/proto:level_proto_cc",
+    ],
+     visibility = [
+      ":subpackages",
+    ],
+)

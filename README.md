@@ -71,3 +71,37 @@ python3 train_find_powerups.py --model=DQN --train=False
                   exploration_final_eps=0.01)
     if not args.train:
         model.exploration_rate = 0.01
+
+
+### Training the high-level agent
+
+As I didn't want to wait forever to train an agent capable of learning simple
+strategies before learning any more higher-level behaviors, the high level
+agent is parameterized using a higher-level set of actions.
+
+Each step, the agent chooses from one of 4+N actions, where N is the number
+of power ups in the level. There are 4 directional actions: forward, backward,
+left, right.
+
+For a new action (different from previous), the agent creates a plan in
+the direction of movement (1 unit distance in the world) that includes
+avoiding obstacles. The default size of the world is a [10, 10] and max
+velocity is 4, so moving from one end of the world to the other takes 5 seconds.
+
+The other N actions correspond moving along an optimal path towards one of the
+powerups. Agent training happens at the granularity of 1/2 a second in the world
+time, and the simulation runs 15 iterations with a time delta of 1/30th of a second
+to achieve this.
+
+In the case that the action is FORWARD and an opponent is visible, the search
+plan will be along the direction to the opponent.
+
+If the action is the same as the previous action, the same plan is followed
+until it is complete (or action is changed). And if it is completed, a new
+plan is created as described above.
+
+Code links:
+ * [python/high_level_env.py](python/high_level_env.py): The "gym" environment defining the simulation environment.
+ * [python/train_high_level_agent.py](python/train_high_level_agent.py): Scripts to train the high-level agent.
+ * [src/agent/high_level_agent.h](high_level_agent.h): Header for HighLevelAgent.
+ * [src/agent/high_level_agent.h](high_level_agent.cc): Implementation of sensing/actions for the HighLevelAgent.
