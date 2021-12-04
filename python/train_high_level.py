@@ -31,7 +31,7 @@ if args.model == 'DQN':
 #                  buffer_size=100000,
                   exploration_initial_eps=1,
                   exploration_fraction=0.9,
-                  exploration_final_eps=0.2)
+                  exploration_final_eps=0.05)
 else:
     env = find_powerups.FindPowerupsEnv(filename)
     env = make_vec_env(lambda: env, n_envs=1)
@@ -54,7 +54,7 @@ obs = env.reset()
 single_env.render_all = True
 n_steps = args.n_steps
 for step in range(n_steps):
-  action, _ = model.predict(obs, deterministic=False)
+  action, _ = model.predict(obs, deterministic=True)
   print("Step {}".format(step + 1))
   print("Action: ", action)
   obs, reward, done, info = env.step(action)

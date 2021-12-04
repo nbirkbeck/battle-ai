@@ -64,13 +64,14 @@ class HighLevelEnv(gym.Env):
     moved = self.agent.moved_distance()
     reward_weights = {
       "no_motion": 1e-3,
-      "health": 1.0/10000*0,
-      "armor": 1.0/10000*0,
+      "health": 1.0/200.0,
+      "armor": 1.0/200.0,
       "other_health": 1.0/10000*0,
       "other_armor": 1.0/10000*0,
       "kill": 1,
-      "die": -0.25*0,
-      "change_plan": 0
+      "die": -0.01,
+      "change_plan": 0.001,
+      "not_powerup": 0.05,
     }
 
     # Reward proportional to maximum velocity moved
@@ -83,8 +84,12 @@ class HighLevelEnv(gym.Env):
     # Small reward for getting health/armor?
     health_delta = self.agent.health() - health_before
     armor_delta = self.agent.armor() - armor_before
-    reward += health_delta * reward_weights['health']
-    reward += armor_delta * reward_weights['armor']
+    if health_delta > 0:
+      print('health: %f' % health_delta)
+      reward += health_delta * reward_weights['health']
+    if armor_delta > 0:
+      print('armor: %f' % armor_delta)
+      reward += armor_delta * reward_weights['armor']
 
     other_health_delta = self.other_agent.health() - other_health_before
     other_armor_delta = self.other_agent.armor() - other_armor_before
@@ -97,6 +102,9 @@ class HighLevelEnv(gym.Env):
     if (last_action >= 4) and (last_action != action):
       reward -= reward_weights['change_plan']
 
+    if action < 4:
+      reward -= reward_weights['not_powerup']
+    
     # Big reward for killing opponent
     if self.agent.health() < 0:
       reward += reward_weights['die']
