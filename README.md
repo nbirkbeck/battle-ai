@@ -241,15 +241,15 @@ pick up some of the power-ups, the strategy is clearly not optimal.
  * [src/agent/search.cc](src/agent/search.cc): Code for planning/searching the environment.
 
 
-# Other things
+## Other things
 
-## Making levels
+### Making levels
 
 There is an example level in levels/symmetric_high.blend. New level can be created by placing boxes and appropriately named circles (for spawn points) and cylinders for power-ups. The script to export the level is in that blend file.
 
 ![blender_level](media/blender_levels.jpg)
 
-## Benchmarking Hard-Coded Agents
+### Benchmarking Hard-Coded Agents
 
 Different hard-coded agents can be pitted against each other and evaluated.
 
@@ -312,7 +312,7 @@ accuracy_0.75 vs accuracy_0.5_shoot_rate_1.0: 0.04 <--------here-------
 accuracy_0.9 vs accuracy_0.5_shoot_rate_1.0: 0.58
 ```
 
-## Ambient occlusion using Cycles
+### Ambient occlusion using Cycles
 
 If creating a new world, the corresponding mesh object and ambient occlusion texture can be created using the `bake_ambient_occlusion` tool:
 
@@ -326,7 +326,7 @@ bazel build -c opt src/tools:bake_ambient_occlusion
 
 
 
-## UI
+### UI
 
 This UI is mostly for debugging the environment and basic high-level agents. There is
 no game mode (e.g., you can't die).
