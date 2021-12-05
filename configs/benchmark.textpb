@@ -1,0 +1,22 @@
+agents {
+  name: "default"
+}
+
+agents {
+  name: "no_favor_powerups"
+  params {
+    favor_powerups: 0.1
+    accuracy: 0.8
+    aggressiveness: 0
+  }
+}
+
+agents {
+  name: "high_accuracy"
+  params {
+   favor_powerups: 1
+   accuracy: 0.8
+   replan_obstruction_distance: 2
+   replan_rate: 0.01
+  }
+}
