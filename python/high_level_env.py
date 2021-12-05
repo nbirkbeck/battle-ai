@@ -136,7 +136,7 @@ class HighLevelEnv(gym.Env):
         self.window = battle_ai.OgreWin(self.level_name + ".mesh")
       self.window.set_world(self.world)
 
-    self.window.set_info_string('Kills: %d Deaths: %d' % (self.num_kills, self.num_deaths))
+    self.window.set_info_string('Kills: %d Deaths: %d [%d]' % (self.num_kills, self.num_deaths, self.agent.last_action()))
     self.window.refresh()
     for i in range(0, 10):
       self.window.process_events()

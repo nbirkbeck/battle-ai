@@ -23,16 +23,16 @@ Some example videos:
 
 ## Requirements
 
-Most of the C++ dependencies can be found in the bazel WORKSPACE
+Most of the C++ dependencies can be found in the bazel [WORKSPACE](WORKSPACE)
 file. The rest of the dependencies are:
 
 * Bazel: https://bazel.build
 * pybind11: https://pybind11.readthedocs.io/en/stable
 * Personal libraries: nmath/nimage/nmisc
 * stable-baselines: URL: https://github.com/hill-a/stable-baselines (Hash: 259f27868f0d727d990f50e04da6e3a5d5367582)
-* Other;
+* Other:
   * Blender for models and level design (and export). 
-  * Ogre for graphics
+  * Ogre (https://https://ogre3d.org/) for graphics
   * Cycles for rendering ambient occlusion
   
 
@@ -85,12 +85,10 @@ Reward:
 * [Optional] Small reward proportional to movement (commented out in code)
 
 
-python/find_powerups.py
-python/train_find_powerups.py
+The agent can be trained with:
+```python3 python/train_find_powerups.py --model=DQN --train=1 --num_train_its=25000000```
 
-python3 train_find_powerups.py --model=DQN --train=True
-
-For 1M iterations, you should start to see episode reward >= 140 (at about) 700K)
+For 1M iterations, you should start to see episode reward >= 140 (at about).
 
 Expected behavior: go to 1 power-up, then over to another while one is still spawning,
  then back to another spawn point (etc.)
@@ -100,6 +98,7 @@ To simulate some runs with the agent, use:
 ```
 python3 python/train_find_powerups.py --model=DQN --train=False
 ```
+This was done using the following policy/environment in stable baselines:
 
 ```
     env = find_powerups.FindPowerupsEnv(args.filename)
@@ -192,7 +191,7 @@ priority. If there are no candidate powerups, the agent will do a random search.
 The parameters controlling shoot_rate, shoot_confidence, and accuracy are common
 between the hard-coded SimpleAgent and the RL high-level agent.
 
-Lots of magic numbers in the implementation.
+Lots of magic numbers in the implementation, but the default configuration is given in the SimpleAgentParams.proto:
  
 
 ```
@@ -221,14 +220,20 @@ python3 python/train_high_level.py --num_train_its=0 --train=0 --save_dir /tmp/h
 
 ### Results:
 
-The "red" agent (index 0) is the RL trained agent. 
+In the example video, the "red" agent (index 0) is the RL trained agent. See this
+[Video](https://www.youtube.com/watch?v=adXGj-8ppU0). 
+
 ![rl_agent](media/rl_agent.png). 
 
-See this [Video](https://www.youtube.com/watch?v=adXGj-8ppU0). 
+
 
 Ultimately, learning to control the power-ups is key to being able to dominating here. While the agent does
 pick up some of the power-ups, the strategy is clearly not optimal.
 
+When penalizing for not picking the actions associated to the power-ups, 
+the agent was able to perform on-par with the default "hard-coded" agent that it 
+was trained against:
+https://www.youtube.com/watch?v=MYxv-7oNm38
 
 ### Code links for high-level agent:
 

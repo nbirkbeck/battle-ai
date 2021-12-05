@@ -27,7 +27,7 @@ if args.model == 'DQN':
     single_env = env
     env = make_vec_env(lambda: env, n_envs=1)
     model = QRDQN('MlpPolicy', env, verbose=2,
-#                 learning_rate = 0.001, #1e-4,
+                  #                 learning_rate = 0.001, #1e-4,
 #                  buffer_size=100000,
                   exploration_initial_eps=1,
                   exploration_fraction=0.9,
@@ -54,7 +54,7 @@ obs = env.reset()
 single_env.render_all = True
 n_steps = args.n_steps
 for step in range(n_steps):
-  action, _ = model.predict(obs, deterministic=True)
+  action, _ = model.predict(obs, deterministic=False)
   print("Step {}".format(step + 1))
   print("Action: ", action)
   obs, reward, done, info = env.step(action)
