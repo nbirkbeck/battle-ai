@@ -2,33 +2,30 @@
 
 #include <algorithm>
 
+#include "observable_state.h"
+#include "src/agent/simple_agent.h"
 #include "src/geometry/plane.h"
 #include "src/proto.h"
-#include "observable_state.h"
 #include "src/proto/actions.pb.h"
-#include "src/agent/simple_agent.h"
 
 extern std::deque<nacb::Vec3d> g_def;
 
-template <class AgentType>
-const Agent* get_ptr(AgentType& agent) {
+template <class AgentType> const Agent* get_ptr(AgentType& agent) {
   return agent;
 }
 
-template <>
-const Agent* get_ptr(const std::unique_ptr<Agent>& agent) {
+template <> const Agent* get_ptr(const std::unique_ptr<Agent>& agent) {
   return agent.get();
 }
 
 template <class AgentPointer>
 bool LineHitsAnything(const nacb::Vec3d& p1, const nacb::Vec3d& p2,
                       const GeometryVector& geoms,
-                      const std::vector<AgentPointer>& agents,
-                      double* t,
+                      const std::vector<AgentPointer>& agents, double* t,
                       Agent** agent) {
   double min_t = 1e10;
   const nacb::Vec3d d = p2 - p1;
-      
+
   for (const auto& g : geoms) {
     double t = 1e10;
     if (g->IntersectRay(p1, d, &t) && t < min_t && t > 0) {
@@ -49,29 +46,22 @@ bool LineHitsAnything(const nacb::Vec3d& p1, const nacb::Vec3d& p2,
   return min_t <= 1;
 }
 
-template
-bool LineHitsAnything(const nacb::Vec3d& p1, const nacb::Vec3d& p2,
-                      const GeometryVector& geoms,
-                      const std::vector<const Agent*>& agents,
-                      double* t,
-                      Agent** agent);
+template bool LineHitsAnything(const nacb::Vec3d& p1, const nacb::Vec3d& p2,
+                               const GeometryVector& geoms,
+                               const std::vector<const Agent*>& agents,
+                               double* t, Agent** agent);
 
-template
-bool LineHitsAnything(const nacb::Vec3d& p1, const nacb::Vec3d& p2,
-                      const GeometryVector& geoms,
-                      const std::vector<std::unique_ptr<Agent>>& agents,
-                      double* t,
-                      Agent** agent);
+template bool
+LineHitsAnything(const nacb::Vec3d& p1, const nacb::Vec3d& p2,
+                 const GeometryVector& geoms,
+                 const std::vector<std::unique_ptr<Agent>>& agents, double* t,
+                 Agent** agent);
 
-
-bool IntersectRayAndGeoms(const GeometryVector& geoms,
-                          const nacb::Vec3d& p,
-                          const nacb::Vec3d& d,
-                          const double radius,
-                          nacb::Vec3d* isect_pos,
-                          nacb::Vec3d* deflected_pos) {
+bool IntersectRayAndGeoms(const GeometryVector& geoms, const nacb::Vec3d& p,
+                          const nacb::Vec3d& d, const double radius,
+                          nacb::Vec3d* isect_pos, nacb::Vec3d* deflected_pos) {
   double min_t = 1;
-  for (const auto& g: geoms) {
+  for (const auto& g : geoms) {
     double t = 1e10;
     nacb::Vec3d deflected_temp;
     if (g->IntersectRay(p, d, &t, radius, &deflected_temp) && t < min_t) {
@@ -81,18 +71,16 @@ bool IntersectRayAndGeoms(const GeometryVector& geoms,
   }
   if (min_t < 1) {
     *isect_pos = p + min_t * d;
-    //g_def.push_back(deflected);
-    //if (g_def.size() > 1000)
+    // g_def.push_back(deflected);
+    // if (g_def.size() > 1000)
     //  g_def.pop_front();
     return true;
   }
   return false;
 }
 
-void HandleAgentMove(Agent* a,
-                     const battle::Actions::Move& move,
-                     const GeometryVector& geoms,
-                     double dt,
+void HandleAgentMove(Agent* a, const battle::Actions::Move& move,
+                     const GeometryVector& geoms, double dt,
                      battle::ActionResponse::Result* results) {
   nacb::Vec3d new_pos = CreateVec3d(move.target());
   nacb::Vec3d dir = new_pos - a->pos();
@@ -107,8 +95,9 @@ void HandleAgentMove(Agent* a,
     if (IntersectRayAndGeoms(geoms, a->pos(), new_pos - a->pos(), radius,
                              &first_isect_pos, &first_deflected_pos)) {
       nacb::Vec3d second_isect_pos, second_deflected_pos;
-      if (IntersectRayAndGeoms(geoms, first_isect_pos, first_deflected_pos - first_isect_pos,
-                               radius, &second_isect_pos, &second_deflected_pos)) {
+      if (IntersectRayAndGeoms(geoms, first_isect_pos,
+                               first_deflected_pos - first_isect_pos, radius,
+                               &second_isect_pos, &second_deflected_pos)) {
         new_pos = second_isect_pos;
       } else {
         new_pos = first_deflected_pos;
@@ -124,27 +113,22 @@ void HandleAgentMove(Agent* a,
   }
 }
 
-void HandleAgentRotate(Agent* a,
-                       const battle::Actions::Rotate& rotate,
-                       const GeometryVector& geoms,
-                       double dt,
+void HandleAgentRotate(Agent* a, const battle::Actions::Rotate& rotate,
+                       const GeometryVector& geoms, double dt,
                        battle::ActionResponse::Result* results) {
 
-  auto target_quat = nacb::Quaternion(nacb::Vec3d(rotate.v().x(),
-                                                  rotate.v().y(),
-                                                  rotate.v().z()),
-                                      rotate.a());
+  auto target_quat = nacb::Quaternion(
+      nacb::Vec3d(rotate.v().x(), rotate.v().y(), rotate.v().z()), rotate.a());
   auto* r = results->mutable_rotate();
   SetVec3(r->mutable_v(), target_quat.v);
   r->set_a(target_quat.a);
 }
 
-void HandleAgentShoot(Agent* a,
-                      const battle::Actions::Shoot& shoot,
-                      ProjectileVector* projectiles,
-                      double world_time,
+void HandleAgentShoot(Agent* a, const battle::Actions::Shoot& shoot,
+                      ProjectileVector* projectiles, double world_time,
                       battle::ActionResponse::Result* results) {
-  if (!shoot.shoot()) return;
+  if (!shoot.shoot())
+    return;
   if (a->current_weapon().CanFire(world_time)) {
     nacb::Vec3d p, d;
     a->GetWeaponRay(&p, &d);
@@ -162,9 +146,10 @@ void HandleAgentShoot(Agent* a,
 ObservableState World::GetObservableStateForAgent(Agent* a) const {
   std::vector<ObservableState::Agent> visible_agents;
 
-  for (auto& a2: agents_) {
-    if (a2.get() == a) continue;
-    
+  for (auto& a2 : agents_) {
+    if (a2.get() == a)
+      continue;
+
     const nacb::Vec3d& p1 = a->pos();
     const nacb::Vec3d& p2 = a2->pos();
     nacb::Vec3d d = p2 - p1;
@@ -174,12 +159,14 @@ ObservableState World::GetObservableStateForAgent(Agent* a) const {
     // agents.push_back(a2.get());
     double t = 0;
     double confidence = 0;
-    std::vector<std::pair<nacb::Vec3d, nacb::Vec3d> > lines;
+    std::vector<std::pair<nacb::Vec3d, nacb::Vec3d>> lines;
     for (int n = -3; n <= 3; ++n) {
       Agent* hit_agent = nullptr;
       const double r = 0.5;
-      if (!LineHitsAnything(p1, p2 + x * (r * double(n) / 3.0), geoms_, agents, &t, &hit_agent)) {
-        lines.push_back(std::make_pair(p1, p1 * (1.0 -t) + (p2 + x * (r * n / 3.0)) * t ));
+      if (!LineHitsAnything(p1, p2 + x * (r * double(n) / 3.0), geoms_, agents,
+                            &t, &hit_agent)) {
+        lines.push_back(
+            std::make_pair(p1, p1 * (1.0 - t) + (p2 + x * (r * n / 3.0)) * t));
         confidence += 1;
       }
     }
@@ -194,25 +181,23 @@ ObservableState World::GetObservableStateForAgent(Agent* a) const {
 bool World::Step(const double dt) {
   std::vector<battle::Actions> agent_actions;
 
-  for (auto& a: agents_) {
+  for (auto& a : agents_) {
     // TODO: give agent a chance to observe the world.
     battle::Actions actions;
 
     auto state = GetObservableStateForAgent(a.get());
     a->GetActions(state, &actions);
-    agent_actions.push_back(actions);     
+    agent_actions.push_back(actions);
   }
 
   // Validate and apply any actions
   {
     int i = 0;
-    for (auto& a: agents_) {
+    for (auto& a : agents_) {
       battle::ActionResponse response;
       if (agent_actions[i].has_shoot()) {
-        HandleAgentShoot(a.get(),
-                         agent_actions[i].shoot(),
-                         &projectiles_, world_time_,
-                         response.add_results());
+        HandleAgentShoot(a.get(), agent_actions[i].shoot(), &projectiles_,
+                         world_time_, response.add_results());
       }
       if (agent_actions[i].has_move()) {
         HandleAgentMove(a.get(), agent_actions[i].move(), geoms_, dt,
@@ -226,17 +211,18 @@ bool World::Step(const double dt) {
       ++i;
     }
   }
-    
+
   // If any of the agents overlap with a power up, then give the
   // agent the power-up.
-  for (auto& p: power_ups_) {
+  for (auto& p : power_ups_) {
     p->Step(dt);
   }
-  for (auto& a: agents_) {
+  for (auto& a : agents_) {
     const auto agent_bounding_geom = a->GetBoundingGeometry();
-    for (auto& p: power_ups_) {
+    for (auto& p : power_ups_) {
       const auto power_up_bounding_geom = p->GetBoundingGeometry();
-      if (!p->IsActive()) continue;
+      if (!p->IsActive())
+        continue;
       if (agent_bounding_geom.Intersects(power_up_bounding_geom)) {
         p->Give(a.get());
       }
@@ -247,7 +233,8 @@ bool World::Step(const double dt) {
 
   // Move any active projectiles.
   for (auto& p : projectiles_) {
-    if (!p.IsActive()) continue;
+    if (!p.IsActive())
+      continue;
     const nacb::Vec3d& pos_now = p.p();
     const nacb::Vec3d pos_future = pos_now + p.v() * dt;
     Agent* agent = 0;
@@ -266,17 +253,18 @@ bool World::Step(const double dt) {
       p.MoveTo(pos_future);
     }
   }
-  auto new_end = std::remove_if(projectiles_.begin(), projectiles_.end(), [=](const Projectile& p) {
-                                                                            return p.CanRemove(world_time_);
-                                                                          });
+  auto new_end = std::remove_if(
+      projectiles_.begin(), projectiles_.end(),
+      [=](const Projectile& p) { return p.CanRemove(world_time_); });
   projectiles_.erase(new_end, projectiles_.end());
   world_time_ += dt;
   return IsGameOver();
 }
 
 bool World::IsGameOver() const {
-  for (const auto & a: agents_) {
-    if (a->health() <= 0) return true;
+  for (const auto& a : agents_) {
+    if (a->health() <= 0)
+      return true;
   }
   return false;
 }
@@ -298,23 +286,21 @@ bool World::LoadFromFile(const std::string& filename) {
 bool World::LoadFromProto(const state::Level& level,
                           std::function<Agent*(int i, const nacb::Vec3d& pos,
                                                const nacb::Quaternion& quat,
-                                               std::vector<Weapon> weapons)> create_agent) {
+                                               std::vector<Weapon> weapons)>
+                              create_agent) {
   FullReset();
   level_proto_ = level;
-  
+
   int box_index = 0;
   for (const auto& lbox : level.boxes()) {
-    geoms_.push_back(
-                     std::unique_ptr<AxisAlignedBox>(
-                                                     new AxisAlignedBox(
-                                                                        CreateVec3d(lbox.pos()),
-                                                                        CreateVec3d(lbox.size()))));
+    geoms_.push_back(std::unique_ptr<AxisAlignedBox>(
+        new AxisAlignedBox(CreateVec3d(lbox.pos()), CreateVec3d(lbox.size()))));
     const auto& geom = *geoms_.back();
     const auto& n = geom.min();
     const auto& x = geom.max();
     if (!IsValidPoint(n) || !IsValidPoint(x) || n.y != 0) {
-      LOG(ERROR) << "Invalid bounding box point:" << n << " to " << x
-                 << " on " << lbox.DebugString() << " at index " << box_index;
+      LOG(ERROR) << "Invalid bounding box point:" << n << " to " << x << " on "
+                 << lbox.DebugString() << " at index " << box_index;
       return false;
     }
     bounds_.min = bounds_.min.min(n);
@@ -322,11 +308,8 @@ bool World::LoadFromProto(const state::Level& level,
     box_index++;
   }
   for (const auto& pup : level.power_ups()) {
-    power_ups_.push_back(
-                         std::unique_ptr<PowerUp>(
-                                                  new PowerUp(CreateVec3d(pup.pos()),
-                                                              pup.type(),
-                                                              pup.amount())));
+    power_ups_.push_back(std::unique_ptr<PowerUp>(
+        new PowerUp(CreateVec3d(pup.pos()), pup.type(), pup.amount())));
   }
   int agent_index = 0;
   for (const auto& spawn_points : level.spawn_points()) {
@@ -336,11 +319,11 @@ bool World::LoadFromProto(const state::Level& level,
     nacb::Vec3d pos = CreateVec3d(spawn_points.pos());
     pos.y = 1;
     if (create_agent) {
-      agents_.push_back(std::unique_ptr<Agent>(create_agent(agent_index, pos, q, weapons)));
+      agents_.push_back(
+          std::unique_ptr<Agent>(create_agent(agent_index, pos, q, weapons)));
     } else {
-      agents_.push_back(std::unique_ptr<Agent>(new SimpleAgent(pos,
-                                                               q,
-                                                               weapons)));
+      agents_.push_back(
+          std::unique_ptr<Agent>(new SimpleAgent(pos, q, weapons)));
     }
     agent_index++;
   }
@@ -365,20 +348,24 @@ void World::Reset() {
 
 void World::ResetAgent(int agent_index) {
   // TODO: reset other attributes
-  const nacb::Vec3d pos = CreateVec3d(level_proto_.spawn_points(agent_index).pos());
+  const nacb::Vec3d pos =
+      CreateVec3d(level_proto_.spawn_points(agent_index).pos());
   agents_[agent_index]->set_pos(pos);
   agents_[agent_index]->Reset();
 }
 
-std::unique_ptr<AccessibilityMap> World::BuildAccessibilityMap(int resolution) const {
-  return std::unique_ptr<AccessibilityMap>(new AccessibilityMap(bounds_, geoms_, resolution));
+std::unique_ptr<AccessibilityMap>
+World::BuildAccessibilityMap(int resolution) const {
+  return std::unique_ptr<AccessibilityMap>(
+      new AccessibilityMap(bounds_, geoms_, resolution));
 }
 
 AccessibilityMap::AccessibilityMap(const AxisAlignedBounds& bounds,
-                                   const GeometryVector& geoms,
-                                   int resolution) : bounds_(bounds), resolution_(resolution) {
+                                   const GeometryVector& geoms, int resolution)
+    : bounds_(bounds), resolution_(resolution) {
   const nacb::Vec3d size = bounds_.max - bounds_.min;
-  nacb::Image8 image(int(size.x * resolution + 0.5), int(size.z * resolution + 0.5), 1);
+  nacb::Image8 image(int(size.x * resolution + 0.5),
+                     int(size.z * resolution + 0.5), 1);
   image = 255;
 
   for (int zi = 0; zi < image.h; ++zi) {
@@ -426,8 +413,8 @@ AccessibilityMap::AccessibilityMap(const AxisAlignedBounds& bounds,
   map_ = image;
 
 #ifdef WORLD_WRITE_DEBUG_IMAGES
-  //map_.save("/tmp/map.png");
-  //image.boxFilter(1).boxFilter(1).boxFilter(1).save("/tmp/c.png");
+  // map_.save("/tmp/map.png");
+  // image.boxFilter(1).boxFilter(1).boxFilter(1).save("/tmp/c.png");
   //(map_ > 0).edt_8sed(0).save("/tmp/edt.png");
 #endif
 }

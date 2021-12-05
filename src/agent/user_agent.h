@@ -4,10 +4,9 @@
 
 class UserAgent : public Agent {
 public:
-  UserAgent(const nacb::Vec3d& pos,
-            const nacb::Quaternion& quat,
-            const std::vector<Weapon> weapons) :
-    Agent(pos, quat, std::move(weapons)) {
+  UserAgent(const nacb::Vec3d& pos, const nacb::Quaternion& quat,
+            const std::vector<Weapon> weapons)
+      : Agent(pos, quat, std::move(weapons)) {
     target_quat_ = quat;
     for (int i = 0; i < 256; ++i) {
       key_down_[i] = 0;
@@ -62,4 +61,4 @@ public:
   nacb::Quaternion target_quat_;
 };
 
-#endif 
+#endif

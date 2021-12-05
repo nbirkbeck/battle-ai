@@ -10,17 +10,15 @@
 
 typedef std::vector<Projectile> ProjectileVector;
 
-
 struct ObservableState {
   struct Agent {
     double confidence;
     nacb::Vec3d pos;
-    std::vector<std::pair<nacb::Vec3d, nacb::Vec3d> > lines;
+    std::vector<std::pair<nacb::Vec3d, nacb::Vec3d>> lines;
   };
-  const std::vector<std::unique_ptr<PowerUp> >& power_ups;
+  const std::vector<std::unique_ptr<PowerUp>>& power_ups;
   const AccessibilityMap* access_map;
   std::vector<Agent> visible_agents;
-
 };
 
 #endif

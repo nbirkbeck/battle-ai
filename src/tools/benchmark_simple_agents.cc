@@ -1,19 +1,19 @@
-#include "src/world.h"
-#include "src/proto.h"
 #include "src/agent/simple_agent.h"
+#include "src/proto.h"
 #include "src/proto/agent_list.pb.h"
 #include "src/proto/level.pb.h"
+#include "src/world.h"
 
-
-#include <glog/logging.h>
 #include <gflags/gflags.h>
+#include <glog/logging.h>
 
 DEFINE_string(level_filename, "", "Path to input level filename");
 DEFINE_string(agent_filename, "", "Config path for agents");
 DEFINE_int32(num_trials, 100, "Number of trials per comparison");
 
 double sign(double x) {
-  if (x == 0) return 0;
+  if (x == 0)
+    return 0;
   return x < 0 ? -1 : 1;
 }
 
@@ -39,7 +39,7 @@ std::pair<double, double> RunTrial(const state::Level& level,
 
   const double kFragLimit = 8;
   const double kMaxWorldTime = 30 * kFragLimit;
-  const double dt = 1.0/10;
+  const double dt = 1.0 / 10;
   int num_deaths[2] = {0, 0};
   while (world.world_time() < kMaxWorldTime &&
          std::max(num_deaths[0], num_deaths[1]) < kFragLimit) {
@@ -54,8 +54,7 @@ std::pair<double, double> RunTrial(const state::Level& level,
     }
   }
   const double relative_time = world.world_time() / kMaxWorldTime;
-  if (num_deaths[0] >= kFragLimit &&
-      num_deaths[1] >= kFragLimit) {
+  if (num_deaths[0] >= kFragLimit && num_deaths[1] >= kFragLimit) {
     return {0, relative_time};
   } else if (num_deaths[0] >= kFragLimit) {
     return {-1, relative_time};

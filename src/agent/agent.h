@@ -2,47 +2,45 @@
 #define _AGENT_H_
 
 #include <algorithm>
+#include <deque>
 #include <memory>
 #include <vector>
-#include <deque>
 
-#include <nmath/vec3.h>
-#include <nmath/quaternion.h>
 #include <nmath/matrix.h>
+#include <nmath/quaternion.h>
+#include <nmath/vec3.h>
 
-#include "src/proto/actions.pb.h"
 #include "src/geometry/axis_aligned_box.h"
 #include "src/geometry/bounding_cylinder.h"
-#include "src/weapon.h"
 #include "src/proto.h"
+#include "src/proto/actions.pb.h"
+#include "src/weapon.h"
 
 class ObservableState;
 
 extern std::deque<nacb::Vec3d> g_def;
 
 class Agent {
- public:
+public:
   static constexpr double kDefaultArmor = 0;
   static constexpr double kDefaultHealth = 100;
   static constexpr double kDefaultMaxHealth = 200;
   static constexpr double kDefaultMaxArmor = 200;
-  
+
   // static constexpr nacb::Vec3d kDefaultSize = nacb::Vec3d(1, 2, 1);
 
-  Agent(const nacb::Vec3d& pos,
-        const nacb::Quaternion& quat,
-        const std::vector<Weapon> weapons,
-        double health = kDefaultHealth,
-        double armor = kDefaultArmor) :
-     pos_(pos), quat_(quat), size_(1, 2, 1), weapons_(std::move(weapons)),
-     health_(health), armor_(armor), active_weapon_(0),
-     max_armor_(kDefaultMaxArmor), max_health_(kDefaultMaxHealth) {
+  Agent(const nacb::Vec3d& pos, const nacb::Quaternion& quat,
+        const std::vector<Weapon> weapons, double health = kDefaultHealth,
+        double armor = kDefaultArmor)
+      : pos_(pos), quat_(quat), size_(1, 2, 1), weapons_(std::move(weapons)),
+        health_(health), armor_(armor), active_weapon_(0),
+        max_armor_(kDefaultMaxArmor), max_health_(kDefaultMaxHealth) {
     assert(active_weapon_ >= 0);
     assert(active_weapon_ < (int)weapons_.size());
   }
 
-  virtual ~Agent() { }
-       
+  virtual ~Agent() {}
+
   virtual void Reset() {
     health_ = kDefaultHealth;
     armor_ = kDefaultArmor;
@@ -63,14 +61,10 @@ class Agent {
       }
     }
   }
-  
-  bool IsActive() const {
-    return health() >= 0;
-  }
 
-  void AddArmor(double value) {
-    armor_ = std::min(max_armor_, armor_ + value);
-  }
+  bool IsActive() const { return health() >= 0; }
+
+  void AddArmor(double value) { armor_ = std::min(max_armor_, armor_ + value); }
 
   void AddHealth(double value) {
     health_ = std::min(max_health_, health_ + value);
@@ -97,11 +91,10 @@ class Agent {
   }
 
   // Returns true if the ray intersects the agent.
-  bool IntersectRay(const nacb::Vec3d& p,
-                    const nacb::Vec3d& d,
+  bool IntersectRay(const nacb::Vec3d& p, const nacb::Vec3d& d,
                     double* t) const {
     const nacb::Vec3d up = quat_.rotate(nacb::Vec3d(0, 1, 0));
-    //const nacb::Vec3d cross = up.cross(d);
+    // const nacb::Vec3d cross = up.cross(d);
     //(pos_ + up * t1) - (p + d * t) = 0;
     nacb::Matrix A(3, 2);
     A(0, 0) = up.x;
@@ -115,11 +108,13 @@ class Agent {
     b[1] = (p.y - pos_.y);
     b[2] = (p.z - pos_.z);
     nacb::Matrix x = nacb::Matrix::linLeastSq(A, b);
-    if (x[0] < -size_.y / 2 || x[0] > size_.y / 2) return false;
+    if (x[0] < -size_.y / 2 || x[0] > size_.y / 2)
+      return false;
     nacb::Vec3d x0 = pos_ + up * x[0];
     nacb::Vec3d x1 = p + d * x[1];
     const double r = (x1 - x0).len();
-    if (r > GetCylinderRadius()) return false;
+    if (r > GetCylinderRadius())
+      return false;
     *t = x[1]; // NOTE: This is only approximate!!!!
     return true;
   }
@@ -137,20 +132,20 @@ class Agent {
     last_pos_ = p;
     pos_ = p;
   }
-  
+
   const nacb::Vec3d& pos() const { return pos_; }
   const nacb::Vec3d& last_pos() const { return last_pos_; }
-  
+
   const nacb::Quaternion& quat() const { return quat_; }
   const nacb::Vec3d& size() const { return size_; }
 
   const double health() const { return health_; }
   const double armor() const { return armor_; }
-  
+
   const double max_health() const { return max_health_; }
   const double max_armor() const { return max_armor_; }
-  
- protected:
+
+protected:
   Agent(const Agent&) = delete;
   void operator=(const Agent&) = delete;
 
@@ -158,7 +153,7 @@ class Agent {
   nacb::Vec3d last_pos_;
   nacb::Quaternion quat_;
   nacb::Vec3d size_;
-  
+
   std::vector<Weapon> weapons_;
   double height_;
   double health_;
@@ -168,5 +163,4 @@ class Agent {
   double max_health_;
 };
 
-
-#endif  // _AGENT_H_
+#endif // _AGENT_H_

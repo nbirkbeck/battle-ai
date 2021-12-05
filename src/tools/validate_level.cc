@@ -1,14 +1,13 @@
-#include "src/world.h"
 #include "src/proto/level.pb.h"
+#include "src/world.h"
 
-#include <glog/logging.h>
 #include <gflags/gflags.h>
+#include <glog/logging.h>
 
 #include <iostream>
 #include <nimage/image.h>
 
 DEFINE_string(filename, "", "Path to input filename");
-
 
 int main(int ac, char* av[]) {
   gflags::ParseCommandLineFlags(&ac, &av, true);

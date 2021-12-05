@@ -1,14 +1,15 @@
 #ifndef HIGH_LEVEL_AGENT
 #define HIGH_LEVEL_AGENT
 
-#include <vector>
-#include <nmath/vec3.h>
-#include "src/world.h"
 #include "src/agent/agent.h"
 #include "src/agent/simple_agent.h"
+#include "src/world.h"
+#include <nmath/vec3.h>
+#include <vector>
 
-// This an implementation of an agent that allows for high-level decision making.
-// E.g,. are we moving towards a specific power-up, or attacking opponent?
+// This an implementation of an agent that allows for high-level decision
+// making. E.g,. are we moving towards a specific power-up, or attacking
+// opponent?
 //
 // The basic state consists of:
 //  position, health, armor
@@ -27,15 +28,10 @@
 // set up the desired action before world->Step is called.
 class HighLevelAgent : public PlanFollowingAgent {
 public:
-  enum Direction {
-     FORWARD = 0,
-     LEFT = 1,
-     BACK = 2,
-     RIGHT = 3
-  };
+  enum Direction { FORWARD = 0, LEFT = 1, BACK = 2, RIGHT = 3 };
 
-  HighLevelAgent():
-    PlanFollowingAgent(nacb::Vec3d(), nacb::Quaternion(), {Weapon()}) {}
+  HighLevelAgent()
+      : PlanFollowingAgent(nacb::Vec3d(), nacb::Quaternion(), {Weapon()}) {}
 
   std::vector<double> Observe(const World* world);
 
@@ -43,8 +39,7 @@ public:
 
   nacb::Vec3d GetDirection(int dir) const;
 
-  void GetActions(const ObservableState& state,
-                  battle::Actions* actions);
+  void GetActions(const ObservableState& state, battle::Actions* actions);
 
   double NormalizeDistance(double d) const {
     // TODO: should be based on world bounds.
@@ -59,9 +54,7 @@ public:
     return p;
   }
 
-  void SetAction(int action_index) {
-    current_action_ = action_index;
-  }
+  void SetAction(int action_index) { current_action_ = action_index; }
 
   double MovedDistance() const { return (pos() - prev_).len(); }
   int last_action() const { return last_action_; }

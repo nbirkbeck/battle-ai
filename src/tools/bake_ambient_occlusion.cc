@@ -1,20 +1,20 @@
-#include <GL/glew.h>
 #include <GL/gl.h>
+#include <GL/glew.h>
 
-#include <glog/logging.h>
 #include <gflags/gflags.h>
-
-#include <stdio.h>
 #include <glog/logging.h>
+
+#include <glog/logging.h>
+#include <stdio.h>
 
 #include <algorithm>
 #include <iostream>
 #include <nappear/mesh.h>
+#include <ngeotc/chart.h>
+#include <ngeotc/texgen.h>
 #include <nimage/image.h>
 #include <nmath/mat3x3.h>
 #include <nmath/matrix.h>
-#include <ngeotc/chart.h>
-#include <ngeotc/texgen.h>
 #include <vector>
 
 #define CCL_NAMESPACE_BEGIN namespace ccl {
@@ -35,23 +35,19 @@
 #undef CCL_NAMESPACE_END
 #undef CCL_NAMESPACE_BEGIN
 
-#include "src/ui/utigl/glwindow.h"
+#include "src/proto.h"
 #include "src/proto/level.pb.h"
 #include "src/proto/vec3.pb.h"
-#include "src/proto.h"
+#include "src/ui/utigl/glwindow.h"
 
 using namespace ccl;
 
-static bool WriteRender(const uchar *pixels, int w, int h, int channels)
-{
+static bool WriteRender(const uchar* pixels, int w, int h, int channels) {
   return true;
 }
 
-static bool WriteBuffer(const std::string &output_path,
-                        const std::vector<float> &pixels,
-                        int w,
-                        int h)
-{
+static bool WriteBuffer(const std::string& output_path,
+                        const std::vector<float>& pixels, int w, int h) {
   float max_value = 0;
   for (int i = 0; i < (int)pixels.size(); i += 4) {
     max_value = std::max(max_value, pixels[i]);
@@ -64,7 +60,8 @@ static bool WriteBuffer(const std::string &output_path,
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
       for (int c = 0; c < 3; ++c, ++i) {
-        output(x, y, c) = (uint8_t)(std::min(255.0f, 255.0f * pixels[i] / max_value));
+        output(x, y, c) =
+            (uint8_t)(std::min(255.0f, 255.0f * pixels[i] / max_value));
       }
       ++i;
     }
@@ -75,34 +72,31 @@ static bool WriteBuffer(const std::string &output_path,
 
 // Cycles appears to be in static buffer mode. Paging in the input here is not
 // necessary.
-void ReadRenderTile(RenderTile &rtile)
-{
-}
+void ReadRenderTile(RenderTile& rtile) {}
 
-void WriteRenderTile(RenderTile &rtile)
-{
+void WriteRenderTile(RenderTile& rtile) {
   static int i = 0;
   std::cout << ".";
   ++i;
-  if (i % 100 == 0) std::cout << "\n";
+  if (i % 100 == 0)
+    std::cout << "\n";
 }
 
-void ExtendBaryImage(const nappear::Mesh& mesh,
-                     nacb::Image32 &tri,
-                     nacb::Imagef &bary,
-                     int iterations) {
+void ExtendBaryImage(const nappear::Mesh& mesh, nacb::Image32& tri,
+                     nacb::Imagef& bary, int iterations) {
   for (int i = 0; i < iterations; ++i) {
     nacb::Imagef bary_new = bary.copy();
     nacb::Image32 tri_new = tri.copy();
     for (int y = 0; y < tri.h; ++y) {
       for (int x = 0; x < tri.w; ++x) {
         int t = tri(x, y);
-        if (t < 0 || t >=(int)mesh.faces.size()) {
+        if (t < 0 || t >= (int)mesh.faces.size()) {
           int neigh[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
           for (int ni = 0; ni < 4; ++ni) {
             int x2 = x + neigh[ni][0];
             int y2 = y + neigh[ni][1];
-            if (x2 < 0 || y2 < 0 || x2 >= tri.w || y2 >= tri.h) continue;
+            if (x2 < 0 || y2 < 0 || x2 >= tri.w || y2 >= tri.h)
+              continue;
             const int t2 = tri(x2, y2);
             if (t2 >= 0 && t2 < (int)mesh.faces.size()) {
               tri_new(x, y, 0) = tri(x2, y2, 0);
@@ -118,20 +112,19 @@ void ExtendBaryImage(const nappear::Mesh& mesh,
     tri = tri_new;
     bary = bary_new;
   }
-
 }
 
-void ImproveBaryImage(const nappear::Mesh &mesh,
-                      const nacb::Image32 &tri,
-                      const nacb::Imagef &bary)
-{
+void ImproveBaryImage(const nappear::Mesh& mesh, const nacb::Image32& tri,
+                      const nacb::Imagef& bary) {
   std::vector<nacb::Mat3x3> sys((int)mesh.faces.size());
   const double w = tri.w;
   const double h = tri.h;
 
   for (int i = 0; i < (int)mesh.faces.size(); ++i) {
-    const nacb::Vec2d d1 = mesh.tvert[mesh.faces[i].tci[1]] - mesh.tvert[mesh.faces[i].tci[0]];
-    const nacb::Vec2d d2 = mesh.tvert[mesh.faces[i].tci[2]] - mesh.tvert[mesh.faces[i].tci[0]];
+    const nacb::Vec2d d1 =
+        mesh.tvert[mesh.faces[i].tci[1]] - mesh.tvert[mesh.faces[i].tci[0]];
+    const nacb::Vec2d d2 =
+        mesh.tvert[mesh.faces[i].tci[2]] - mesh.tvert[mesh.faces[i].tci[0]];
     nacb::Mat3x3 m = nacb::Mat3x3::eye();
     m(0, 0) = d1.x;
     m(1, 0) = d1.y;
@@ -157,8 +150,7 @@ void ImproveBaryImage(const nappear::Mesh &mesh,
           bary(x, y, 1) = (float)bc.x;
           bary(x, y, 2) = (float)bc.y;
           fixed++;
-        }
-        else {
+        } else {
           same++;
         }
       }
@@ -174,9 +166,8 @@ void ImproveBaryImage(const nappear::Mesh &mesh,
    If timage!=null then fill it with the triangle indices (-1
    where there is no triangle).
 */
-nacb::Imagef GetBaryImage(
-    const nappear::Mesh &mesh, int tw, int th, bool useTexCoords, nacb::Image32 *timage)
-{
+nacb::Imagef GetBaryImage(const nappear::Mesh& mesh, int tw, int th,
+                          bool useTexCoords, nacb::Image32* timage) {
   nacb::Imagef bary(tw, th, 4);
   nacb::Image8 trgb(tw, th, 3);
 
@@ -257,12 +248,12 @@ nacb::Imagef GetBaryImage(
         bary(x, y, 0) = bary(x, y, 1) = bary(x, y, 2) = bary(x, y, 3) = 0;
         if (timage)
           (*timage)(x, y) = uint32_t(-1);
-      }
-      else {
+      } else {
         co *= (1.0 / len);
 
         if (timage) {
-          int ti = int(trgb(x, y, 0)) + (int(trgb(x, y, 1)) << 8) + (int(trgb(x, y, 2)) << 16);
+          int ti = int(trgb(x, y, 0)) + (int(trgb(x, y, 1)) << 8) +
+                   (int(trgb(x, y, 2)) << 16);
           (*timage)(x, y) = ti;
         }
         for (int k = 0; k < 3; k++)
@@ -274,12 +265,11 @@ nacb::Imagef GetBaryImage(
   return bary;
 }
 
-ccl::Mesh *ConvertMesh(Scene *scene, const nappear::Mesh &mesh)
-{
-  ccl::Mesh *cc_mesh = new Mesh();
+ccl::Mesh* ConvertMesh(Scene* scene, const nappear::Mesh& mesh) {
+  ccl::Mesh* cc_mesh = new Mesh();
   vector<float3> P;
 
-  for (const auto &v : mesh.vert) {
+  for (const auto& v : mesh.vert) {
     float3 p;
     p[0] = (float)v.x;
     p[1] = (float)v.y;
@@ -293,26 +283,26 @@ ccl::Mesh *ConvertMesh(Scene *scene, const nappear::Mesh &mesh)
   cc_mesh->verts = P;
 
   const bool smooth = !true;
-  for (const auto &face : mesh.faces) {
+  for (const auto& face : mesh.faces) {
     cc_mesh->add_triangle(face.vi[0], face.vi[1], face.vi[2], 0, smooth);
   }
 
   // Taken from cycles_xml.cpp. Not sure if we need it.
   if (cc_mesh->need_attribute(scene, ATTR_STD_GENERATED)) {
-    Attribute *attr = cc_mesh->attributes.add(ATTR_STD_GENERATED);
-    memcpy(attr->data_float3(), cc_mesh->verts.data(), sizeof(float3) * cc_mesh->verts.size());
+    Attribute* attr = cc_mesh->attributes.add(ATTR_STD_GENERATED);
+    memcpy(attr->data_float3(), cc_mesh->verts.data(),
+           sizeof(float3) * cc_mesh->verts.size());
   }
   return cc_mesh;
 }
 
-static Scene *scene_init(const nappear::Mesh &mesh, Session *session)
-{
-  Scene *scene = new Scene({}, session->device);
+static Scene* scene_init(const nappear::Mesh& mesh, Session* session) {
+  Scene* scene = new Scene({}, session->device);
 
-  ccl::Mesh *cc_mesh = ConvertMesh(scene, mesh);
+  ccl::Mesh* cc_mesh = ConvertMesh(scene, mesh);
   scene->geometry.push_back(cc_mesh);
 
-  Object *object = new Object();
+  Object* object = new Object();
   object->geometry = cc_mesh;
   object->name = "hi";
   scene->objects.push_back(object);
@@ -323,12 +313,9 @@ static Scene *scene_init(const nappear::Mesh &mesh, Session *session)
   return scene;
 }
 
-void BuildPrimitiveMaps(const nappear::Mesh &mesh,
-                        int bake_width,
-                        int bake_height,
-                        std::vector<float> *primitive,
-                        std::vector<float> *diff)
-{
+void BuildPrimitiveMaps(const nappear::Mesh& mesh, int bake_width,
+                        int bake_height, std::vector<float>* primitive,
+                        std::vector<float>* diff) {
   nacb::Imagef bary;
   nacb::Image32 timage;
   bary = GetBaryImage(mesh, bake_width, bake_height, true, &timage);
@@ -349,22 +336,26 @@ void BuildPrimitiveMaps(const nappear::Mesh &mesh,
         (*primitive)[(y * bake_width + x) * 4 + 2] = bary(x, y, 0);
         (*primitive)[(y * bake_width + x) * 4 + 3] = bary(x, y, 1);
 
-        // These derivatives are used for sampling random points within the pixel
+        // These derivatives are used for sampling random points within the
+        // pixel
         if (x + 1 < timage.w && tri == (int)timage(x + 1, y)) {
-          (*diff)[(y * bake_width + x) * 4 + 0] = (bary(x + 1, y, 0) - bary(x, y, 0));
-          (*diff)[(y * bake_width + x) * 4 + 2] = (bary(x + 1, y, 1) - bary(x, y, 1));
+          (*diff)[(y * bake_width + x) * 4 + 0] =
+              (bary(x + 1, y, 0) - bary(x, y, 0));
+          (*diff)[(y * bake_width + x) * 4 + 2] =
+              (bary(x + 1, y, 1) - bary(x, y, 1));
         }
         if (y + 1 < timage.h && tri == (int)timage(x, y + 1)) {
-          (*diff)[(y * bake_width + x) * 4 + 1] = (bary(x, y + 1, 0) - bary(x, y, 0));
-          (*diff)[(y * bake_width + x) * 4 + 3] = (bary(x, y + 1, 1) - bary(x, y, 1));
+          (*diff)[(y * bake_width + x) * 4 + 1] =
+              (bary(x, y + 1, 0) - bary(x, y, 0));
+          (*diff)[(y * bake_width + x) * 4 + 3] =
+              (bary(x, y + 1, 1) - bary(x, y, 1));
         }
       }
     }
   }
 }
 
-BufferParams GetBufferParams(int bake_width, int bake_height)
-{
+BufferParams GetBufferParams(int bake_width, int bake_height) {
   BufferParams buffer_params;
   buffer_params.width = bake_width;
   buffer_params.height = bake_height;
@@ -373,15 +364,12 @@ BufferParams GetBufferParams(int bake_width, int bake_height)
   return buffer_params;
 }
 
-bool SessionInitAndBake(const SessionParams &session_params,
+bool SessionInitAndBake(const SessionParams& session_params,
                         const nappear::Mesh& mesh,
-                        const std::string &output_path,
-                        const int bake_width,
-                        const int bake_height,
-                        int samples)
-{
-  auto *session = new Session(session_params);
-  auto *scene = scene_init(mesh, session);
+                        const std::string& output_path, const int bake_width,
+                        const int bake_height, int samples) {
+  auto* session = new Session(session_params);
+  auto* scene = scene_init(mesh, session);
   session->scene = scene;
 
   std::vector<float> primitive;
@@ -398,11 +386,12 @@ bool SessionInitAndBake(const SessionParams &session_params,
     return false;
   }
 
-  Object *object = scene->objects.front();
+  Object* object = scene->objects.front();
   std::cout << "object:" << object->name.string() << "\n";
 
   // Initialize bake manager to do what we want (has to be by name)
-  scene->bake_manager->set(scene, object->name.string(), shader_type, bake_pass_filter);
+  scene->bake_manager->set(scene, object->name.string(), shader_type,
+                           bake_pass_filter);
 
   // Create a combined pass (by name) so we can get the results.
   Pass::add(PASS_COMBINED, scene->film->passes, "Combined");
@@ -418,7 +407,8 @@ bool SessionInitAndBake(const SessionParams &session_params,
     session->tile_manager.set_samples(samples);
     session->reset(buffer_params, samples);
     session->buffers->reset(buffer_params);
-    // Can bind progress callbacks here using:  session->progress.set_update_callback
+    // Can bind progress callbacks here using:
+    // session->progress.set_update_callback
   }
 
   // Setup input parameters (hack by birkbeck). The buffers were always getting
@@ -445,7 +435,7 @@ bool SessionInitAndBake(const SessionParams &session_params,
   session->write_render_tile_cb = function_null;
 
   std::cout << "\nDone";
-  delete session;  // This crashes
+  delete session; // This crashes
   return true;
 }
 
@@ -466,11 +456,13 @@ void RemoveDuplicates(const std::vector<VecType>& input_vert,
   // So this doesn't need to be fast.
   const double kThresh = 1e-6;
   for (int i = 0; i < (int)input_vert.size(); ++i) {
-    if (vert_mapping->count(i)) continue;
+    if (vert_mapping->count(i))
+      continue;
     (*vert_mapping)[i] = output_vert->size();
-    
+
     for (int j = i + 1; j < (int)input_vert.size(); ++j) {
-      if (vert_mapping->count(j)) continue;
+      if (vert_mapping->count(j))
+        continue;
       const double len = (input_vert[j] - input_vert[i]).len();
       if (len <= kThresh) {
         (*vert_mapping)[j] = output_vert->size();
@@ -485,7 +477,7 @@ nappear::Mesh RemoveDuplicates(const nappear::Mesh& mesh) {
   std::unordered_map<int, int> vert_mapping;
   std::vector<nacb::Vec3d> vert;
   RemoveDuplicates(mesh.vert, &vert, &vert_mapping);
-  
+
   std::unordered_map<int, int> tvert_mapping;
   std::vector<nacb::Vec2d> tvert;
   RemoveDuplicates(mesh.tvert, &tvert, &tvert_mapping);
@@ -493,7 +485,7 @@ nappear::Mesh RemoveDuplicates(const nappear::Mesh& mesh) {
   nappear::Mesh output_mesh;
   output_mesh.vert = vert;
   output_mesh.tvert = tvert;
-  
+
   for (int i = 0; i < (int)mesh.faces.size(); ++i) {
     auto face = mesh.faces[i];
     for (int k = 0; k < 3; ++k) {
@@ -516,29 +508,19 @@ nappear::Mesh ConvertLevelToMesh(const state::Level& level) {
   // area of texture size) and if the bounds are greater than 1, it scales
   // down by the max bounds. We can trick it to not do this and to keep
   // the relative world scaling by scaling down the world coordinates.
-  nacb::Mat3x3 global_sc = nacb::Mat3x3::diag(1.0/128, 1.0/128, 1.0/128);
-  for (const auto& box: level.boxes()) {
+  nacb::Mat3x3 global_sc = nacb::Mat3x3::diag(1.0 / 128, 1.0 / 128, 1.0 / 128);
+  for (const auto& box : level.boxes()) {
     const nacb::Vec3d pos = global_sc * CreateVec3d(box.pos());
     const nacb::Vec3d size = global_sc * CreateVec3d(box.size());
 
-    nacb::Vec3d v[8] =
-      {
-       {-1.000000, 1.000000, -1.000000},
-       {1.000000, 1.000000, -1.000000},
-       {-1.000000, 1.000000, 1.000000},
-       {1.000000, 1.000000, 1.000000},
-       {-1.000000, -1.000000, -1.000000},
-       {1.000000, -1.000000, -1.000000},
-       {-1.000000, -1.000000, 1.000000},
-       {1.000000, -1.000000, 1.000000}
-      };
+    nacb::Vec3d v[8] = {
+        {-1.000000, 1.000000, -1.000000},  {1.000000, 1.000000, -1.000000},
+        {-1.000000, 1.000000, 1.000000},   {1.000000, 1.000000, 1.000000},
+        {-1.000000, -1.000000, -1.000000}, {1.000000, -1.000000, -1.000000},
+        {-1.000000, -1.000000, 1.000000},  {1.000000, -1.000000, 1.000000}};
     int faces[6][4] = {
-                       {1, 5, 7, 3},
-                       {4, 3, 7, 8},
-                       {8, 7, 5, 6},
-                       {6, 2, 4, 8},
-                       {2, 1, 3, 4},
-                       {6, 5, 1, 2},
+        {1, 5, 7, 3}, {4, 3, 7, 8}, {8, 7, 5, 6},
+        {6, 2, 4, 8}, {2, 1, 3, 4}, {6, 5, 1, 2},
     };
     nacb::Mat3x3 sc = nacb::Mat3x3::diag(size.x / 2, size.y / 2, size.z / 2);
     for (int i = 0; i < 6; ++i) {
@@ -620,7 +602,6 @@ nappear::Mesh ConvertLevelToMesh(const state::Level& level) {
   return mesh;
 }
 
-
 DEFINE_string(input_mesh, "", "Path to input object");
 DEFINE_string(output_mesh, "", "Path to output mesh");
 DEFINE_string(output_intermediate_mesh, "", "Path to output intermediate mesh");
@@ -631,8 +612,7 @@ DEFINE_int32(num_samples, 64, "Number of samples to use");
 DEFINE_int32(bake_width, 1024, "Output image width");
 DEFINE_int32(bake_height, 1024, "Output image height");
 
-int main(int ac, char *av[])
-{
+int main(int ac, char* av[]) {
   gflags::ParseCommandLineFlags(&ac, &av, true);
   google::InitGoogleLogging(av[0]);
 
@@ -651,7 +631,7 @@ int main(int ac, char *av[])
     device_available = true;
   }
   if (session_params.device.type == DEVICE_NONE || !device_available) {
-    LOG(ERROR) <<  "Unknown device: %s\n" << FLAGS_devicename;
+    LOG(ERROR) << "Unknown device: %s\n" << FLAGS_devicename;
     return -1;
   } else if (FLAGS_num_samples < 0) {
     LOG(ERROR) << "Invalid number of samples:" << FLAGS_num_samples;
@@ -686,9 +666,9 @@ int main(int ac, char *av[])
     }
   }
 
-  if (!SessionInitAndBake(
-          session_params, mesh, FLAGS_output_path,
-          FLAGS_bake_width, FLAGS_bake_height, FLAGS_num_samples)) {
+  if (!SessionInitAndBake(session_params, mesh, FLAGS_output_path,
+                          FLAGS_bake_width, FLAGS_bake_height,
+                          FLAGS_num_samples)) {
     LOG(ERROR) << "Error baking\n";
     return -1;
   }

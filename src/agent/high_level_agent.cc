@@ -23,26 +23,32 @@ std::vector<double> HighLevelAgent::Observe(const World* world) {
   features.push_back(armor() / max_armor() * 2 - 1);
 
   // Distance to power-ups (and opponent distance to power ups)
-  for (const auto& pup: state.power_ups) {
+  for (const auto& pup : state.power_ups) {
     std::deque<nacb::Vec3d> points;
-    const double pup_distance = Search(state.access_map, other_points, pos(), pup->pos(), &points);
+    const double pup_distance =
+        Search(state.access_map, other_points, pos(), pup->pos(), &points);
     features.push_back(NormalizeDistance(pup_distance));
     features.push_back(pup->time_until_respawn() / pup->respawn_delay());
-    features.push_back(NormalizeDistance(Search(state.access_map, {}, other_agent_pos, pup->pos(), &points)));
+    features.push_back(NormalizeDistance(
+        Search(state.access_map, {}, other_agent_pos, pup->pos(), &points)));
   }
 
   // Distance to opponent (if known)
   std::deque<nacb::Vec3d> points;
-  features.push_back(NormalizeDistance(Search(state.access_map, {}, pos(), other_agent_pos, &points)));
+  features.push_back(NormalizeDistance(
+      Search(state.access_map, {}, pos(), other_agent_pos, &points)));
   features.push_back(state.visible_agents.size());
 
   // Sense distance in each possible move direction.
-  std::vector<const Agent*> agents = {}; // Don't care about proximity to agents.
+  std::vector<const Agent*> agents =
+      {}; // Don't care about proximity to agents.
   for (int i = 0; i < 4; ++i) {
     nacb::Vec3d dir = GetDirection(i);
     double t = 0;
     Agent* agent = nullptr;
-    if (LineHitsAnything(pos(), pos() + dir, world->geoms(), agents, &t, &agent) && t >= 0 && t <= 1) {
+    if (LineHitsAnything(pos(), pos() + dir, world->geoms(), agents, &t,
+                         &agent) &&
+        t >= 0 && t <= 1) {
       features.push_back(t);
     } else {
       features.push_back(1);
@@ -51,7 +57,8 @@ std::vector<double> HighLevelAgent::Observe(const World* world) {
 
   // Distance to plan
   if (plan_) {
-    features.push_back(NormalizeDistance((plan_->waypoints_.back() - pos()).len()));
+    features.push_back(
+        NormalizeDistance((plan_->waypoints_.back() - pos()).len()));
   } else {
     features.push_back(-1);
   }
@@ -78,7 +85,8 @@ nacb::Vec3d HighLevelAgent::GetDirection(int dir) const {
   case LEFT:
     return nacb::Quaternion::rod(nacb::Vec3d(0, M_PI / 2.0, 0)).rotate(forward);
   case RIGHT:
-    return nacb::Quaternion::rod(nacb::Vec3d(0, -M_PI / 2.0, 0)).rotate(forward);
+    return nacb::Quaternion::rod(nacb::Vec3d(0, -M_PI / 2.0, 0))
+        .rotate(forward);
   case BACK:
     return forward * -1;
   }
@@ -95,7 +103,8 @@ void HighLevelAgent::GetActions(const ObservableState& state,
   }
   // 0-3: Forward, left, right, backward
   if (current_action_ < 4) {
-    if (!plan_ || plan_->AlmostFinished(pos()) || last_action_ != current_action_) {
+    if (!plan_ || plan_->AlmostFinished(pos()) ||
+        last_action_ != current_action_) {
       nacb::Vec3d new_pos = pos() + GetDirection(current_action_);
       nacb::Vec2<int> pos_i = state.access_map->WorldToImage(pos());
       nacb::Vec2<int> new_pos_i = state.access_map->WorldToImage(new_pos);
@@ -107,8 +116,10 @@ void HighLevelAgent::GetActions(const ObservableState& state,
           nacb::Vec2d cand_i = new_pos_i + nacb::Vec2<int>(x, z);
           if (cand_i.x < 0 || cand_i.y < 0 ||
               cand_i.x >= state.access_map->map().w ||
-              cand_i.y >= state.access_map->map().h) continue;
-          if (!state.access_map->map()(cand_i.x, cand_i.y)) continue;
+              cand_i.y >= state.access_map->map().h)
+            continue;
+          if (!state.access_map->map()(cand_i.x, cand_i.y))
+            continue;
           const double dist = (cand_i - new_pos_i).len();
           if (dist < best_dist) {
             best_dist = dist;
@@ -152,4 +163,4 @@ void HighLevelAgent::GetActions(const ObservableState& state,
   last_action_ = current_action_;
 
   PlanFollowingAgent::GetActions(state, actions);
-}    
+}

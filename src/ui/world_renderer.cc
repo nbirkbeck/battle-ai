@@ -1,24 +1,24 @@
-#include <GL/glew.h>
 #include "src/ui/world_renderer.h"
+#include <GL/glew.h>
 
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
-#include <nmath/vec3.h>
-#include <nmath/mat4x4.h>
 #include <nimage/image.h>
+#include <nmath/mat4x4.h>
+#include <nmath/vec3.h>
 
 // This is a global object (only used for debugging)
 std::deque<nacb::Vec3d> g_def;
 
-std::vector<std::pair<nacb::Vec3d, nacb::Vec3d> >
+std::vector<std::pair<nacb::Vec3d, nacb::Vec3d>>
 GetCreaseLines(const nappear::Mesh& mesh) {
-  std::vector<std::pair<nacb::Vec3d, nacb::Vec3d> > segments;
+  std::vector<std::pair<nacb::Vec3d, nacb::Vec3d>> segments;
   std::unordered_map<int, int> edge_face;
   for (int i = 0; i < (int)mesh.faces.size(); ++i) {
     const auto& face = mesh.faces[i];
     for (int j = 0; j < 3; ++j) {
-      const int e1 = face.vi[(j + 1) % 3]  * mesh.vert.size() + face.vi[j];
+      const int e1 = face.vi[(j + 1) % 3] * mesh.vert.size() + face.vi[j];
       edge_face[e1] = i;
     }
   }
@@ -26,7 +26,7 @@ GetCreaseLines(const nappear::Mesh& mesh) {
     const auto& face = mesh.faces[i];
     const auto& n1 = mesh.norm[face.ni[0]];
     for (int j = 0; j < 3; ++j) {
-      const int e2 = face.vi[j % 3]  * mesh.vert.size() + face.vi[(j + 1) % 3];
+      const int e2 = face.vi[j % 3] * mesh.vert.size() + face.vi[(j + 1) % 3];
       double dot = 0;
       bool has_neigh = false;
       if (edge_face.count(e2)) {
@@ -57,7 +57,7 @@ GetCreaseLines(const nappear::Mesh& mesh) {
           segments[j].first -= d1 * 0.125;
           segments[j].second += d1 * 0.125;
           // segments[j].second = segments[j].first + d2 * (l2 * 1.2);
-          //segments[j].first = segments[j].second;
+          // segments[j].first = segments[j].second;
         }
         break;
       }
@@ -66,13 +66,14 @@ GetCreaseLines(const nappear::Mesh& mesh) {
   return segments;
 }
 
-void DrawCube(const nacb::Vec3d pos, const nacb::Vec3d size, bool wire = false) {
+void DrawCube(const nacb::Vec3d pos, const nacb::Vec3d size,
+              bool wire = false) {
   glPushMatrix();
   glTranslatef(pos.x, pos.y, pos.z);
   glScalef(size.x, size.y, size.z);
   if (wire) {
     glutWireCube(1);
-  } else {  
+  } else {
     glutSolidCube(1);
   }
   glPopMatrix();
@@ -119,11 +120,11 @@ void DrawSimpleAgent(FFont& font, GLUquadric* cylinder, const Agent* agent) {
   m.glMult();
   glScaled(0.03 * z, 0.03 * z, 0.03 * z);
   char buf[1024];
-  snprintf(buf, sizeof(buf), "h/a: %g %g", agent->health(), agent->armor()); 
+  snprintf(buf, sizeof(buf), "h/a: %g %g", agent->health(), agent->armor());
   font.drawString(buf, -0.5, 0);
   glDisable(GL_TEXTURE_2D);
   glPopMatrix();
-    
+
   glPushMatrix();
   glRotatef(-90, 1, 0, 0);
   gluCylinder(cylinder, 0.5, 0.5, 2, 32, 2);
@@ -206,9 +207,9 @@ void WorldRenderer::Draw(const World* world) {
     glLineWidth(3);
     glEnable(GL_POLYGON_OFFSET_LINE);
     glPolygonOffset(1.04, 1.04);
-    
+
     glBegin(GL_LINES);
-    for (const auto& segment: segments_) {
+    for (const auto& segment : segments_) {
       glVertex3dv(segment.first.data);
       glVertex3dv(segment.second.data);
     }
@@ -217,23 +218,22 @@ void WorldRenderer::Draw(const World* world) {
 
     glLineWidth(1);
   } else {
-    for (const auto& g: world->geoms()) {
+    for (const auto& g : world->geoms()) {
       glColor3f(1, 1, 1);
       DrawCube(g->pos, g->size);
     }
   }
-  for (const auto& pup: world->power_ups()) {
-    if (!pup->IsActive()) continue;
+  for (const auto& pup : world->power_ups()) {
+    if (!pup->IsActive())
+      continue;
     glColor3f(0, 0, 1);
     DrawCube(pup->pos(), nacb::Vec3d(1, 1, 1));
   }
-  for (const auto& agent: world->agents()) {
+  for (const auto& agent : world->agents()) {
     if (body_) {
       glColor3f(1, 1, 1);
       glPushMatrix();
-      glTranslatef(agent->pos().x,
-                   agent->pos().y * 0,
-                   agent->pos().z);
+      glTranslatef(agent->pos().x, agent->pos().y * 0, agent->pos().z);
 
       glPushMatrix();
       const nacb::Vec3d d = agent->pos() - agent->last_pos();
@@ -255,7 +255,7 @@ void WorldRenderer::Draw(const World* world) {
       glTranslatef(0, -0.5, 0.0);
       right_wheel_->draw();
       glPopMatrix();
-      
+
       glPopMatrix();
 
       glPushMatrix();
@@ -264,37 +264,29 @@ void WorldRenderer::Draw(const World* world) {
       head_->draw();
       glPopMatrix();
 
-      
       glPopMatrix();
     } else {
       DrawSimpleAgent(font_, cylinder_, agent.get());
     }
   }
-  for (const auto& projectile: world->projectiles()) {
+  for (const auto& projectile : world->projectiles()) {
     glColor3f(1, 0, 0);
 
     glPushMatrix();
-    glTranslatef(projectile.p().x,
-                 projectile.p().y,
-                 projectile.p().z);
-    double theta = atan2(projectile.v().x,
-                         projectile.v().z);
+    glTranslatef(projectile.p().x, projectile.p().y, projectile.p().z);
+    double theta = atan2(projectile.v().x, projectile.v().z);
     glRotatef(theta * 180 / M_PI, 0, 1, 0);
     gluCylinder(cylinder_, 0.25, 0.25, 0.5, 32, 0.5);
     glPopMatrix();
     glPushMatrix();
-    glTranslatef(projectile.p().x,
-                 projectile.p().y,
-                 projectile.p().z);
+    glTranslatef(projectile.p().x, projectile.p().y, projectile.p().z);
     glRotatef(theta * 180 / M_PI, 0, 1, 0);
     DrawCube(nacb::Vec3d(0, 0, 0), nacb::Vec3d(0.1, 0.1, 1));
     glPopMatrix();
   }
   for (int i = 0; i < (int)g_def.size(); ++i) {
     glPushMatrix();
-    glTranslatef(g_def[i].x,
-                 g_def[i].y,
-                 g_def[i].z);
+    glTranslatef(g_def[i].x, g_def[i].y, g_def[i].z);
     DrawCube(nacb::Vec3d(0, 0, 0), nacb::Vec3d(0.01, 0.01, 0.01));
     glPopMatrix();
   }
