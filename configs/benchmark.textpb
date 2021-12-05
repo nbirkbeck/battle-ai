@@ -3,20 +3,43 @@ agents {
 }
 
 agents {
+  name: "zero_favor_powerups"
+  params {
+    favor_powerups: 0
+  }
+}
+
+agents {
   name: "no_favor_powerups"
   params {
     favor_powerups: 0.1
-    accuracy: 0.8
-    aggressiveness: 0
+  }
+}
+
+agents {
+  name: "low_accuracy"
+  params {
+   accuracy: 0.2
+  }
+}
+
+agents {
+  name: "medium_accuracy"
+  params {
+   accuracy: 0.5
   }
 }
 
 agents {
   name: "high_accuracy"
   params {
-   favor_powerups: 1
-   accuracy: 0.8
-   replan_obstruction_distance: 2
-   replan_rate: 0.01
+   accuracy: 0.9
+  }
+}
+
+agents {
+  name: "perfect_accuracy"
+  params {
+   accuracy: 1.0
   }
 }

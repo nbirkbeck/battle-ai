@@ -1,0 +1,42 @@
+agents {
+  name: "accuracy_0.1"
+  params {
+   accuracy: 0.1
+  }
+}
+
+agents {
+  name: "accuracy_0.25"
+  params {
+   accuracy: 0.25
+  }
+}
+
+agents {
+  name: "accuracy_0.5"
+  params {
+   accuracy: 0.5
+  }
+}
+
+agents {
+  name: "accuracy_0.75"
+  params {
+   accuracy: 0.75
+  }
+}
+
+agents {
+  name: "accuracy_0.9"
+  params {
+   accuracy: 0.9
+  }
+}
+
+agents {
+  name: "accuracy_0.5_shoot_rate_1.0"
+  params {
+    shoot_rate: 1.0
+    accuracy: 0.5
+  }
+}

@@ -1,0 +1,41 @@
+agents {
+  name: "replan_rate_0.005"
+  params {
+    replan_rate: 0.005
+  }
+}
+
+agents {
+  name: "replan_rate_0.01"
+  params {
+    replan_rate: 0.01
+  }
+}
+
+agents {
+  name: "replan_rate_0.02"
+  params {
+    replan_rate: 0.02
+  }
+}
+
+agents {
+  name: "replan_rate_0.04"
+  params {
+    replan_rate: 0.04
+  }
+}
+
+agents {
+  name: "replan_rate_0.08"
+  params {
+    replan_rate: 0.08
+  }
+}
+
+agents {
+  name: "replan_rate_0.16"
+  params {
+    replan_rate: 0.16
+  }
+}

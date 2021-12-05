@@ -37,7 +37,7 @@ std::pair<double, double> RunTrial(const state::Level& level,
   world.ReplaceAgent(0, a1);
   world.ReplaceAgent(1, a2);
 
-  const double kFragLimit = 4;
+  const double kFragLimit = 8;
   const double kMaxWorldTime = 30 * kFragLimit;
   const double dt = 1.0/10;
   int num_deaths[2] = {0, 0};
@@ -84,7 +84,7 @@ int main(int ac, char* av[]) {
     for (int j = i + 1; j < config.agents_size(); ++j) {
       const auto& agent1 = config.agents(i);
       const auto& agent2 = config.agents(j);
-      std::cout << agent1.name() << " vs " << agent2.name();
+      std::cout << agent1.name() << " vs " << agent2.name() << ": ";
       double avg = 0;
       for (int i = 0; i < FLAGS_num_trials; ++i) {
         auto result = RunTrial(level, agent1.params(), agent2.params());

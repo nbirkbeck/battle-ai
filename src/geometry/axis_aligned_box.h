@@ -6,37 +6,32 @@
 #include <nmath/vec3.h>
 
 class AxisAlignedBox {
- public:
-  AxisAlignedBox(const nacb::Vec3d& p,
-                 const nacb::Vec3d& s): pos(p), size(s) {}
+public:
+  AxisAlignedBox(const nacb::Vec3d& p, const nacb::Vec3d& s)
+      : pos(p), size(s) {}
 
   bool IntersectSphere(const nacb::Vec3d& p, double r) const {
-    return
-      (p.x >= pos.x - size.x / 2 - r) &&
-      (p.y >= pos.y - size.y / 2 - r) &&
-      (p.z >= pos.z - size.z / 2 - r) &&
-      (p.x <= pos.x + size.x / 2 + r) &&
-      (p.y <= pos.y + size.y / 2 + r) &&
-      (p.z <= pos.z + size.z / 2 + r);
-      
+    return (p.x >= pos.x - size.x / 2 - r) && (p.y >= pos.y - size.y / 2 - r) &&
+           (p.z >= pos.z - size.z / 2 - r) && (p.x <= pos.x + size.x / 2 + r) &&
+           (p.y <= pos.y + size.y / 2 + r) && (p.z <= pos.z + size.z / 2 + r);
   }
 
-  bool IntersectRay(const nacb::Vec3d& p, const nacb::Vec3d& d,
-                    double* t, double r = 0,
-                    nacb::Vec3d* deflected = 0) const {
+  bool IntersectRay(const nacb::Vec3d& p, const nacb::Vec3d& d, double* t,
+                    double r = 0, nacb::Vec3d* deflected = 0) const {
     Plane planes[4] = {
-                       {nacb::Vec3d(1, 0, 0), -(pos.x + size.x / 2 + r)},
-                       {nacb::Vec3d(-1, 0, 0), (pos.x - size.x / 2 - r)},
-                       {nacb::Vec3d(0, 0, 1), -(pos.z + size.z / 2 + r)},
-                       {nacb::Vec3d(0, 0, -1), (pos.z - size.z / 2 - r)},
+        {nacb::Vec3d(1, 0, 0), -(pos.x + size.x / 2 + r)},
+        {nacb::Vec3d(-1, 0, 0), (pos.x - size.x / 2 - r)},
+        {nacb::Vec3d(0, 0, 1), -(pos.z + size.z / 2 + r)},
+        {nacb::Vec3d(0, 0, -1), (pos.z - size.z / 2 - r)},
     };
 
     *t = 1e10;
     for (int plane_index = 0; plane_index < 4; ++plane_index) {
       const Plane& plane = planes[plane_index];
       double t1 = 1e10;
-      if (d.dot(plane.n) >= 0) continue;
-      if (plane.IntersectRay(p, d, &t1) && t1 >= -r/4 && t1 < *t) {
+      if (d.dot(plane.n) >= 0)
+        continue;
+      if (plane.IntersectRay(p, d, &t1) && t1 >= -r / 4 && t1 < *t) {
         const nacb::Vec3d x = p + d * t1;
         // TODO: y?
         const int check = plane_index <= 1 ? 2 : 0;
@@ -53,14 +48,10 @@ class AxisAlignedBox {
         }
       }
     }
-    return *t >= -r/4 && *t < 1e10;
+    return *t >= -r / 4 && *t < 1e10;
   }
-  nacb::Vec3d min() const {
-    return pos - size * 0.5;
-  }
-  nacb::Vec3d max() const {
-    return pos + size * 0.5;
-  }
+  nacb::Vec3d min() const { return pos - size * 0.5; }
+  nacb::Vec3d max() const { return pos + size * 0.5; }
   nacb::Vec3d pos;
   nacb::Vec3d size;
 };
@@ -70,5 +61,4 @@ struct AxisAlignedBounds {
   nacb::Vec3d max;
 };
 
-
-#endif  // _AXIS_ALIGNED_BOX_H_
+#endif // _AXIS_ALIGNED_BOX_H_

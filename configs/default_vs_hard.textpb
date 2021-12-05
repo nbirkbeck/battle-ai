@@ -1,0 +1,12 @@
+agents {
+  name: "default"
+}
+
+agents {
+  name: "hard"
+  params {
+    accuracy: 0.9
+    shoot_rate: 0.9
+    replan_rate: 0.04
+  }
+}
