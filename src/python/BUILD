@@ -18,6 +18,7 @@ pybind_extension(
     linkopts = ["-lglut -lGL -lGLU -lGLEW"],
     deps = DEPS + [
         "//src:world",
+        "//src/agent:high_level_agent",
         "//src/ui:simple_window",
         "//src/proto:actions_proto_cc",
         "//src/proto:level_proto_cc",

@@ -92,7 +92,9 @@ cc_library(
     deps = DEPS + [
        ":search",
        ":agent",
+       ":simple_agent",
         "//src:proto",
+        "//src:world",        
         "//src:weapon",
         "//src:power_up_hdr",
         "//src:observable_state",
