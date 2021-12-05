@@ -8,6 +8,7 @@
 #include <nimage/image.h>
 
 DEFINE_string(filename, "", "Path to input filename");
+DEFINE_bool(build_map, false, "Build access map");
 
 int main(int ac, char* av[]) {
   gflags::ParseCommandLineFlags(&ac, &av, true);
@@ -25,19 +26,19 @@ int main(int ac, char* av[]) {
   }
   std::cout << "Successfully loaded:" << FLAGS_filename << std::endl;
 
-  /*
-  nacb::Imagef image = world.BuildAccessibilityMap(16);
-  image.write("/tmp/map.png");
-
-  for (int i = 0; i < 100; ++i) {
-    for (int j = 0; j < 10; ++j) {
-      world.Step(1.0 / 60.0);
-    }
-    char name[1024];
+  if (FLAGS_build_map) {
     nacb::Imagef image = world.BuildAccessibilityMap(16);
-    snprintf(name, sizeof(name), "/tmp/image-%04d.png", i);
-    image.write(name);
+    image.write("/tmp/map.png");
+
+    for (int i = 0; i < 100; ++i) {
+      for (int j = 0; j < 10; ++j) {
+        world.Step(1.0 / 60.0);
+      }
+      char name[1024];
+      nacb::Imagef image = world.BuildAccessibilityMap(16);
+      snprintf(name, sizeof(name), "/tmp/image-%04d.png", i);
+      image.write(name);
+    }
   }
-  */
   return 0;
 }

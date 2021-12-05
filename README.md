@@ -23,8 +23,6 @@ Some example videos:
 
 ## Requirements
 
-(TODO: add links)
-
 Most of the C++ dependencies can be found in the bazel WORKSPACE
 file. The rest of the dependencies are:
 
@@ -324,8 +322,6 @@ bazel build -c opt src/tools:bake_ambient_occlusion
 ![levels/world.textpb.png](levels/world.textpb.png)
 
 
-
-
 ### UI
 
 This UI is mostly for debugging the environment and basic high-level agents. There is
@@ -342,10 +338,13 @@ The `--agent_filename` controls which agents should be used in the simulation.
 
 If `--user_agent=true` you can control the 0-th agent with Quake like settings 'w', 'a', 's', 'd' (for forward, strafe left, backward, strafe right) and ' ' for shoot. Use mouse to control direction.
 
-The `--use_ogre` flag gives:
+The `--use_ogre` flag gives the following (note in this mode you can use '1' to toggle 1st-person view):
 ![simple_ui](media/overview.png)
-Use '1' to toggle 1st-person view. 
+
+
 
 The `--use_orge=false` gives the simple UI;
 ![simple_ui](media/simple_ui.png)
+
+And a video of that mode: [simple_ui.mp4](https://youtu.be/h6Pw6QfVRgc).
 

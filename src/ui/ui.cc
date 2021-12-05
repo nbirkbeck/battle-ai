@@ -70,8 +70,7 @@ public:
     if (animating_) {
       world_->Step(1.0 / 60);
     }
-    /*
-      DEbug collisions.
+#ifdef DEBUG_COLLISION
     nacb::Vec3d up(0, 1, 0);
     for (int i = 0; i < 360; i += 1) {
       nacb::Vec3d d =
@@ -85,9 +84,9 @@ public:
       glVertex3dv((p1 + (p2 - p1) * t).data);
       glEnd();
     }
-
     return;
-    */
+#endif
+
     auto state = world_->GetObservableStateForAgent(user_agent);
     if (!state.visible_agents.empty() && 0) {
       LOG(INFO) << state.visible_agents[0].pos << " "
