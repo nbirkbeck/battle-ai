@@ -1,5 +1,8 @@
 #include <GL/glew.h>
 
+#include "src/ui/utigl/glwindow.h"
+#include "src/ui/ogre_win.h"
+
 #include "src/agent/simple_agent.h"
 #include "src/agent/user_agent.h"
 #include "src/observable_state.h"
@@ -12,7 +15,6 @@
 #include "src/world.h"
 
 #include "src/ui/utigl/ffont.h"
-#include <GL/glu.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <nimage/image.h>
@@ -105,7 +107,7 @@ public:
   }
 
   virtual void applyModelview() {
-    if (0 && animating_) {
+    if (user_agent && animating_) {
       const auto& pos = user_agent->pos();
       const auto quat = user_agent->quat();
       glRotatef(10, 1, 0, 0);

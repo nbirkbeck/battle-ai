@@ -1,8 +1,8 @@
 #ifndef _WORLD_RENDERER_H_
 #define _WORLD_RENDERER_H_
 
-#include <GL/gl.h>
 #include <GL/glew.h>
+#include <GL/gl.h>
 
 #include "src/ui/utigl/ffont.h"
 #include "src/world.h"
@@ -11,6 +11,7 @@
 
 class GLUquadric;
 
+// A simple rendering class (used before integrating Ogre)
 class WorldRenderer {
 public:
   WorldRenderer(const char* font_name = "", const std::string& level_obj = "",
