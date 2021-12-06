@@ -19,7 +19,7 @@ leveraging some old libraries I had from grad school, using
 Some example videos:
 
 * [Trained agent video](https://www.youtube.com/watch?v=adXGj-8ppU0): An example RL agent (index=0) pitted against a hand-coded agent (index=1).
-* [1st-person video ](https://youtu.be/Dz061aS6qgM): It is possible to play against an agent in 1st-person mode. But the controls are not very fun.
+* [1st-person video ](https://youtu.be/Dz061aS6qgM): It is possible to play against an agent in 1st-person mode. But the controls are not very fun. Bullets may be more visible in the simple UI (https://www.youtube.com/watch?v=h6Pw6QfVRgc).
 
 ## Requirements
 
