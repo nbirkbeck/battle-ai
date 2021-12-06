@@ -39,12 +39,35 @@ file. The rest of the dependencies are:
 
 ## Building
 
-The environment/simulation code is written in c++. You must first
+The environment/simulation code is written in c++.  The build uses bazel. You can first
+grab all the dependencies using:
+
+```
+bazel fetch //...
+```
+If you are using an older version of bazel, you may need to change the proto dependency in the WORKSPACE file, like:
+
+```
+ http_archive(
+      name = "com_google_protobuf",
+     strip_prefix = "protobuf-3.12.0",
+     urls = ["https://github.com/protocolbuffers/protobuf/archive/refs/tags/v3.12.0.zip"],
+ )
+```
+
+You can then
 build the python module that will allow us to train an agent in python:
 
 ```
 bazel build -c opt //src/python:battle_ai.so //src/ui:ui
 ```
+
+Run unit tests (there aren't many):
+
+```
+bazel test -c opt //...
+```
+
 
 ### Source Layout
 

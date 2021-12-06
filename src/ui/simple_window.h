@@ -1,8 +1,8 @@
 #ifndef _SIMPLE_WINDOW_H_
 #define _SIMPLE_WINDOW_H_ 1
 
-#include <GL/gl.h>
 #include <GL/glew.h>
+#include <GL/gl.h>
 
 #include "src/ui/utigl/glwindow.h"
 #include "src/ui/world_renderer.h"

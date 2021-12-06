@@ -1,5 +1,5 @@
-#include <GL/gl.h>
 #include <GL/glew.h>
+#include <GL/gl.h>
 
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -9,12 +9,12 @@
 
 #include <algorithm>
 #include <iostream>
+#include <nmath/matrix.h>
 #include <nappear/mesh.h>
 #include <ngeotc/chart.h>
 #include <ngeotc/texgen.h>
 #include <nimage/image.h>
 #include <nmath/mat3x3.h>
-#include <nmath/matrix.h>
 #include <vector>
 
 #define CCL_NAMESPACE_BEGIN namespace ccl {

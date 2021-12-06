@@ -1,5 +1,6 @@
-#include <GL/gl.h>
 #include <GL/glew.h>
+
+#include <GL/gl.h>
 #include <stdint.h>
 
 #include "src/agent/high_level_agent.h"

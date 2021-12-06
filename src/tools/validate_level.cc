@@ -27,7 +27,7 @@ int main(int ac, char* av[]) {
   std::cout << "Successfully loaded:" << FLAGS_filename << std::endl;
 
   if (FLAGS_build_map) {
-    nacb::Imagef image = world.BuildAccessibilityMap(16);
+    auto image = world.BuildAccessibilityMap(16)->map();
     image.write("/tmp/map.png");
 
     for (int i = 0; i < 100; ++i) {
@@ -35,7 +35,7 @@ int main(int ac, char* av[]) {
         world.Step(1.0 / 60.0);
       }
       char name[1024];
-      nacb::Imagef image = world.BuildAccessibilityMap(16);
+      auto image = world.BuildAccessibilityMap(16)->map();
       snprintf(name, sizeof(name), "/tmp/image-%04d.png", i);
       image.write(name);
     }
