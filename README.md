@@ -68,6 +68,10 @@ Run unit tests (there aren't many):
 bazel test -c opt //...
 ```
 
+And symlink the built module into the python directory:
+```
+ln -s bazel-bin/src/python/battle_ai.so python/battle_ai.so 
+```
 
 ### Source Layout
 
